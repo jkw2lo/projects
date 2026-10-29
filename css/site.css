@@ -9,7 +9,7 @@
   --line-2: rgba(20, 20, 20, 0.06);
   --shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 18px 40px -22px rgba(20, 20, 20, 0.28);
   --shadow-lift: 0 2px 4px rgba(20, 20, 20, 0.05), 0 26px 50px -24px rgba(20, 20, 20, 0.38);
-  --serif: "Fraunces", Georgia, serif;
+  --serif: "Newsreader", Georgia, serif;
   --sans: "Inter", system-ui, -apple-system, sans-serif;
   --accent: #141414;
   color-scheme: light;
@@ -47,7 +47,7 @@ main:focus { outline: none; }
 /* ---------- nav and footer ---------- */
 .nav { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line-2); }
 .nav-in { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-.brand { font: 600 1.25rem/1 var(--serif); text-decoration: none; letter-spacing: -0.01em; }
+.brand { font: 600 1.4rem/1 var(--serif); text-decoration: none; letter-spacing: -0.01em; }
 .nav nav { display: flex; gap: 24px; }
 .nav nav a { color: var(--ink-2); text-decoration: none; font-size: 0.92rem; font-weight: 500; }
 .nav nav a:hover { color: var(--ink); }
@@ -72,7 +72,7 @@ main:focus { outline: none; }
 /* ---------- home: hero ---------- */
 .hero { padding: 88px 0 64px; }
 @media (max-width: 599px) { .hero { padding: 48px 0 40px; } }
-.hero h1 { max-width: 18ch; font: 500 clamp(2.4rem, 1.6rem + 3.6vw, 4.6rem)/1.04 var(--serif); letter-spacing: -0.035em; }
+.hero h1 { max-width: 18ch; font: 500 clamp(2.4rem, 1.6rem + 3.6vw, 4.6rem)/1.04 var(--serif); letter-spacing: -0.02em; }
 .hero p { max-width: 58ch; margin-top: 24px; color: var(--ink-2); font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem); }
 .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 32px; color: var(--muted); font-size: 0.9rem; }
 .hero-meta b { color: var(--ink); font-weight: 600; }
@@ -132,7 +132,7 @@ main:focus { outline: none; }
 .back svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .p-hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: center; padding: 36px 0 56px; }
 @media (max-width: 859px) { .p-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 24px 0 40px; } }
-.p-hero h1 { margin-top: 14px; font: 500 clamp(2.4rem, 1.8rem + 2.6vw, 3.8rem)/1.04 var(--serif); letter-spacing: -0.035em; }
+.p-hero h1 { margin-top: 14px; font: 500 clamp(2.4rem, 1.8rem + 2.6vw, 3.8rem)/1.04 var(--serif); letter-spacing: -0.02em; }
 .p-hero .tagline { margin-top: 10px; color: color-mix(in srgb, var(--accent) 80%, var(--ink)); font-weight: 600; font-size: 1.15rem; }
 .p-hero .pitch { margin-top: 16px; color: var(--ink-2); font-size: 1.08rem; max-width: 44ch; }
 .p-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
@@ -234,7 +234,9 @@ body.editing { padding-bottom: 88px; }
 @media (max-width: 759px) { .timeline:not(.detail) .tl-row { padding: 8px 0; } }
 
 /* owner-only nav links */
-.nav nav a.owner { color: var(--muted); font-weight: 500; }
+/* dotted: a reminder that visitors don't see these */
+.nav nav a.owner { color: var(--muted); font-weight: 500; padding: 4px 10px; margin: -4px -6px; border: 1.5px dotted color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 8px; }
+.nav nav a.owner:hover { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 60%, transparent); }
 .nav nav { display: flex; gap: 22px; }
 @media (max-width: 479px) { .nav nav { gap: 14px; } .nav nav a { font-size: 0.86rem; } }
 
