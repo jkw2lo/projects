@@ -101,8 +101,8 @@
   fetch("site.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (s) {
     site = s;
     (s.groups || []).forEach(function (g) { groups[g.id] = g.label; });
+    if (s.brand || s.name) document.getElementById("brand").textContent = s.brand || s.name;
     if (s.name) {
-      document.getElementById("brand").textContent = s.name;
       document.getElementById("footName").textContent = "© " + new Date().getFullYear() + " " + s.name;
     }
     if (s.github) document.getElementById("navGithub").href = s.github;
@@ -143,6 +143,8 @@
     armEditor();
   }
 
+  var brand = function () { return site.brand || (site.title || "Projects") + " · " + (site.name || ""); };
+
   // ---------- nav ----------
   // the site's own links go before GitHub; owner links go at the very end, set apart
   function navLink(id, label, href, last) {
@@ -170,7 +172,7 @@
   // ---------- home ----------
   var lastSlug = "";
   function renderHome(anchor) {
-    document.title = (site.title || "Projects") + " · " + (site.name || "");
+    document.title = brand();
     var featured = list(site.featured, 4).map(function (r) { return all.filter(function (p) { return p.repo === r; })[0]; }).filter(Boolean);
     var used = {};
     all.forEach(function (p) { used[p.group] = (used[p.group] || 0) + 1; });
@@ -241,7 +243,7 @@
     lastSlug = p.slug;
     var d = p.d, screens = list(d.screens, 3), i = all.indexOf(p);
     var prev = all[(i - 1 + all.length) % all.length], next = all[(i + 1) % all.length];
-    document.title = p.name + " · " + (site.name || "");
+    document.title = p.name + " · " + brand();
     var f = d.facts || {};
     var facts = ["worksOn", "data", "builtWith"].map(function (k) { return [str(f[k], 40), ed(p.repo, "facts." + k)]; })
       .concat([[built(p) || (str(f.started) ? "Since " + str(f.started, 20) : ""), ""]]).filter(function (x) { return x[0]; });
@@ -635,7 +637,7 @@
   // skills[{group, items[]}]. resume.pdf (made from this page by tools/resume-pdf.mjs) is the download.
   function renderResume() {
     var r = resume, R = "@resume";
-    document.title = "Resume · " + (site.name || "");
+    document.title = "Resume · " + brand();
     var when = function (x) { return esc([str(x.start, 20), str(x.end, 20)].filter(Boolean).join(" – ")); };
     var links = list(r.links, 6).map(function (l) { return { label: str(l && l.label, 40), url: safeUrl(str(l && l.url, 300), location.href) }; })
       .filter(function (l) { return l.label && l.url; });
@@ -716,7 +718,7 @@
       : days < 2 ? "yesterday" : dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
   function renderStats() {
-    document.title = "Views · " + (site.name || "");
+    document.title = "Views · " + brand();
     try { localStorage.setItem(ME, "1"); } catch (e) {}
     if (isMe()) ownerLinks();
     main.innerHTML = '<section class="wrap stats"><a class="back" href="./">' + BACK + "Projects</a>" +

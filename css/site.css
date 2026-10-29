@@ -293,3 +293,12 @@ body.editing { padding-bottom: 88px; }
 .sheet { position: fixed; right: 16px; top: 76px; z-index: 30; width: min(380px, calc(100% - 32px)); padding: 18px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lift); }
 .sheet p { margin: 0; color: var(--ink-2); }
 .sheet .p-actions { margin-top: 14px; }
+
+/* phones: keep the longer name on one line; it links home, so the Projects link can go */
+.brand { white-space: nowrap; }
+@media (max-width: 479px) {
+  .brand { font-size: 1.15rem; }
+  #navWork { display: none; }
+  .nav nav a.owner { padding: 3px 7px; }
+  .nav nav a.owner.first { margin-left: 2px; }
+}
