@@ -1,0 +1,39 @@
+{
+  "name": "Jen",
+  "title": "Projects",
+  "headline": "Small, careful apps for the things I actually do.",
+  "intro": "I design and build web apps for my own life: learning languages, planning trips and weeks, cooking, writing and making things by hand. Each one started with a problem I had, and each one runs in the browser with nothing to install.",
+  "github": "https://github.com/jkw2lo",
+
+  "featured": ["writers-blocks", "learn_japanese_nihongo_quest", "trip_planner"],
+
+  "groups": [
+    { "id": "learning", "label": "Learning" },
+    { "id": "planning", "label": "Planning" },
+    { "id": "making", "label": "Making" },
+    { "id": "home", "label": "Home" },
+    { "id": "games", "label": "Games" }
+  ],
+
+  "projects": [
+    { "repo": "writers-blocks", "group": "making" },
+    { "repo": "learn_japanese_nihongo_quest", "group": "learning" },
+    { "repo": "trip_planner", "group": "planning" },
+    { "repo": "notebook_portfolio", "group": "making" },
+    { "repo": "room-to-breathe", "group": "games" },
+    { "repo": "awl-gusset", "group": "making" },
+    { "repo": "learn_chinese_hanzi_quest", "group": "learning" },
+    { "repo": "learn_cantonese_quest", "group": "learning" },
+    { "repo": "groundwork_habits_tasks", "group": "planning" },
+    { "repo": "recipe_book", "group": "home" },
+    { "repo": "cha-chaan-teng-rush", "group": "games" },
+    { "repo": "pyon_mart", "group": "learning" },
+    { "repo": "ui_field_guide", "group": "making" },
+    { "repo": "yearly_calendar", "group": "planning" },
+    { "repo": "planner", "group": "planning" },
+    { "repo": "loose_leaf_notes", "group": "home" },
+    { "repo": "skincare_shelf", "group": "home" },
+    { "repo": "ring-shortlist", "group": "home" },
+    { "repo": "off-script", "group": "home" }
+  ]
+}
