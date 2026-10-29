@@ -288,3 +288,8 @@ body.editing { padding-bottom: 88px; }
   .r-projects a { padding: 6px 10px; }
   a { color: inherit; }
 }
+
+/* the sign-in steps for edit mode */
+.sheet { position: fixed; right: 16px; top: 76px; z-index: 30; width: min(380px, calc(100% - 32px)); padding: 18px 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lift); }
+.sheet p { margin: 0; color: var(--ink-2); }
+.sheet .p-actions { margin-top: 14px; }

@@ -160,15 +160,10 @@
     if (document.getElementById("navEdit")) return;
     navLink("navViews", "Views", "./#stats", true).className = "owner first";
     navLink("navEdit", "Edit", "#", true).className = "owner";
+    firebase().catch(function () {}); // loaded ahead, so the sign-in popups open straight from a click
     document.getElementById("navEdit").addEventListener("click", function (e) {
       e.preventDefault();
-      if (editing) return;
-      var a = this;
-      a.textContent = "Signing in…";
-      firebase().then(startEditing).then(function () { a.textContent = "Edit"; }, function (err) {
-        a.textContent = "Edit";
-        alert("Couldn’t start editing: " + (err.message || err.code));
-      });
+      if (!editing) firebase().then(editSignIn, function () { sheet("Couldn’t load the sign-in library. Check the connection and try again."); });
     });
   }
 
@@ -582,15 +577,47 @@
       note = "Couldn’t save: " + e.message; route();
     });
   }
-  // GitHub access comes through the same Firebase sign-in as the stats: a GitHub popup that
-  // asks for repo access. If GitHub is already tied to another sign-in, its token still comes back.
+  // Signing in for edit mode is two steps, each its own click so no popup gets blocked:
+  // 1. Google, the account the stats rule trusts (skipped when already signed in with it);
+  // 2. GitHub, linked to that account, for a token that can commit. If GitHub is already
+  //    tied to another sign-in, the link fails but GitHub's token still comes back.
+  var hasGoogle = function (u) { return !!u && u.providerData.some(function (x) { return x.providerId === "google.com"; }); };
+  var sheetEl = null;
+  function sheet(text, button, onClick) {
+    if (!sheetEl) {
+      sheetEl = document.createElement("div");
+      sheetEl.className = "sheet";
+      sheetEl.setAttribute("role", "dialog");
+      sheetEl.setAttribute("aria-label", "Sign in to edit");
+      document.body.appendChild(sheetEl);
+    }
+    sheetEl.innerHTML = "<p>" + esc(text) + '</p><div class="p-actions">' +
+      (button ? '<button type="button" class="btn solid" data-sheet="go">' + esc(button) + "</button>" : "") +
+      '<button type="button" class="btn" data-sheet="close">' + (button ? "Cancel" : "Close") + "</button></div>";
+    sheetEl.querySelector('[data-sheet="close"]').onclick = closeSheet;
+    if (button) sheetEl.querySelector('[data-sheet="go"]').onclick = onClick;
+  }
+  function closeSheet() { if (sheetEl) { sheetEl.remove(); sheetEl = null; } }
+  function editSignIn(fb) {
+    var fail = function (e) { sheet("Couldn’t sign in: " + (e.message || e.code)); };
+    var github = function () {
+      sheet("Connecting GitHub…");
+      startEditing(fb).then(closeSheet, fail);
+    };
+    if (hasGoogle(fb.auth().currentUser)) return github();
+    sheet("First, sign in with Google: the account your launchpad and stats use.", "Continue with Google", function () {
+      fb.auth().signInWithPopup(new fb.auth.GoogleAuthProvider()).then(function () {
+        sheet("Now connect GitHub, so Save can commit your changes.", "Connect GitHub", github);
+      }, fail);
+    });
+  }
   function startEditing(fb) {
     var pr = new fb.auth.GithubAuthProvider();
     pr.addScope("public_repo");
     var u = fb.auth().currentUser;
-    var linked = u && u.providerData.some(function (x) { return x.providerId === "github.com"; });
-    var go = !u ? fb.auth().signInWithPopup(pr) : linked ? u.reauthenticateWithPopup(pr) : u.linkWithPopup(pr);
-    return go.then(function (r) { return r.credential; }, function (e) { if (e.credential) return e.credential; throw e; })
+    var linked = u.providerData.some(function (x) { return x.providerId === "github.com"; });
+    return (linked ? u.reauthenticateWithPopup(pr) : u.linkWithPopup(pr))
+      .then(function (r) { return r.credential; }, function (e) { if (e.credential) return e.credential; throw e; })
       .then(function (c) {
         if (!c || !c.accessToken) throw new Error("GitHub didn’t give access.");
         ghToken = c.accessToken;
@@ -698,17 +725,14 @@
       '<div id="statsBody"><p class="loading">Checking you’re signed in…</p></div></section>';
     var body = function (h) { var el = document.getElementById("statsBody"); if (el) el.innerHTML = h; };
     firebase().then(function (fb) {
+      var google = function () {
+        fb.auth().signInWithPopup(new fb.auth.GoogleAuthProvider()).catch(function (e) { body('<p class="lead">' + esc(e.message) + "</p>"); });
+      };
       fb.auth().onAuthStateChanged(function (user) {
         if (!user) {
-          body('<p class="lead" style="margin-top:20px">Sign in with the account your launchpad uses.</p>' +
-            '<div class="p-actions"><button class="btn solid" data-in="google">Sign in with Google</button>' +
-            '<button class="btn" data-in="github">Sign in with GitHub</button></div>');
-          main.querySelectorAll("[data-in]").forEach(function (b) {
-            b.addEventListener("click", function () {
-              var pr = b.dataset.in === "github" ? new fb.auth.GithubAuthProvider() : new fb.auth.GoogleAuthProvider();
-              fb.auth().signInWithPopup(pr).catch(function (e) { body('<p class="lead">' + esc(e.message) + "</p>"); });
-            });
-          });
+          body('<p class="lead" style="margin-top:20px">Sign in with the Google account your launchpad uses.</p>' +
+            '<div class="p-actions"><button class="btn solid" data-in="google">Sign in with Google</button></div>');
+          main.querySelector("[data-in]").addEventListener("click", google);
           return;
         }
         fb.firestore().collection("showcase_visits").orderBy("at", "desc").limit(5000).get().then(function (snap) {
@@ -739,7 +763,13 @@
             '<p class="lead" style="margin-top:28px">Tag a link to see where views come from: <code>' +
             esc(location.origin + location.pathname) + "?for=acme</code>. A tag is lowercase letters, numbers and dashes.</p>");
         }, function (e) {
-          body('<p class="lead">Couldn’t read the views (' + esc(e.code || e.message) + "). If you just signed in with a different account, it needs to be the one in the Firestore rule.</p>");
+          var who = user.email || user.displayName || "another account";
+          var via = (user.providerData[0] || {}).providerId === "github.com" ? " (through GitHub)" : "";
+          body('<p class="lead" style="margin-top:20px">You’re signed in as ' + esc(who) + via + ", which can’t see the views" +
+            (e.code === "permission-denied" ? "" : " (" + esc(e.code || e.message) + ")") +
+            ". Switch to the Google account your launchpad uses.</p>" +
+            '<div class="p-actions"><button class="btn solid" data-in="google">Switch to Google</button></div>');
+          main.querySelector("[data-in]").addEventListener("click", google);
         });
       });
     }, function () { body('<p class="lead">Couldn’t load the sign-in library. Check the connection and try again.</p>'); });
