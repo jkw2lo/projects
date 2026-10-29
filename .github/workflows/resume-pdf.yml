@@ -1,0 +1,27 @@
+name: Resume PDF
+on:
+  push:
+    branches: [main]
+    paths: [resume.json, css/site.css, js/site.js, tools/resume-pdf.mjs]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/resume-pdf.mjs
+      - name: Commit the PDF
+        run: |
+          [ -f resume.pdf ] || exit 0
+          git add resume.pdf
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update resume.pdf"
+          git pull --rebase
+          git push

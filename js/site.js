@@ -6,17 +6,20 @@
    Pages (one HTML file, routed by the hash):
      ./                 home: intro, featured projects, every project with filters
      ./#recipe-book     a project, laid out from its overview
-     ./#stats           views, for the signed-in owner only (not linked anywhere)
+     ./#resume          the resume, from resume.json, with resume.pdf to download
+     ./#stats           views, for the signed-in owner only
 
    The home page also has a timeline of when each project was built, from timeline.json
    (made from commit history by tools/timeline.mjs, which a workflow runs daily).
 
-   Edit mode (from the stats page) signs in to GitHub and makes the text editable in
-   place; Save commits the changes to site.json or that project's overview.json.
+   Edit mode signs in to GitHub and makes the text editable in place; Save commits the
+   changes to site.json, resume.json or that project's overview.json. In a browser that
+   has opened the stats page, the nav shows Views and Edit; visitors never see them.
 
    Views are counted quietly, once per visit, in Firestore's showcase_visits (the code
    and the time, nothing else): "pf" for the home page, "pf-<tag>" when the link had
-   ?for=<tag>, and "pp-<slug>" for a project page. Nothing is counted off the live site,
+   ?for=<tag>, "pp-<slug>" for a project page, and "rv" / "rd" for viewing and downloading the resume
+   (each with "-<tag>" when the link was tagged). Nothing is counted off the live site,
    or in a browser that has opened the stats page. */
 (function () {
   "use strict";
@@ -35,9 +38,10 @@
   var ME = "projects:me"; // set once you've opened #stats here: this browser isn't counted
 
   var OWNER = "jkw2lo", SITE = "projects"; // this site's own repo, where site.json lives
+  var HOME = "https://jkw2lo.github.io/projects/"; // absolute, so links still work in resume.pdf
 
   var main = document.getElementById("main");
-  var site = null, timeline = null, all = [], bySlug = {}, byRepo = {}, groups = {}, filter = "all";
+  var site = null, timeline = null, resume = null, all = [], bySlug = {}, byRepo = {}, groups = {}, filter = "all";
 
   // ---------- helpers ----------
   function esc(s) {
@@ -72,10 +76,11 @@
   // ---------- quiet view counting ----------
   var tag = "";
   try { tag = (new URLSearchParams(location.search).get("for") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 16); } catch (e) {}
+  var isMe = function () { try { return !!localStorage.getItem(ME); } catch (e) { return false; } };
+  var tagged = function (k) { return tag ? k + "-" + tag : k; };
   function count(k) {
-    if (!LIVE) return;
+    if (!LIVE || isMe()) return;
     try {
-      if (localStorage.getItem(ME)) return;
       if (sessionStorage.getItem("projects:seen:" + k)) return;
       sessionStorage.setItem("projects:seen:" + k, "1");
     } catch (e) {}
@@ -89,6 +94,8 @@
 
   // ---------- loading ----------
   main.innerHTML = '<p class="loading wrap">Loading projects…</p>';
+  var resumeReady = fetch("resume.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { resume = d && d.name ? d : null; }, function () {});
   var timelineReady = fetch("timeline.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; })
     .then(function (t) { timeline = t && t.projects ? t : null; }, function () {});
   fetch("site.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (s) {
@@ -116,10 +123,11 @@
         });
     }));
   }).then(function (items) {
-    return timelineReady.then(function () { return items; });
+    return Promise.all([timelineReady, resumeReady]).then(function () { return items; });
   }).then(function (items) {
     all = items.filter(Boolean);
     all.forEach(function (p) { bySlug[p.slug] = p; byRepo[p.repo] = p; });
+    navLinks();
     route();
     window.addEventListener("hashchange", route);
   }).catch(function () {
@@ -129,9 +137,38 @@
   function route() {
     var h = decodeURIComponent(location.hash.slice(1));
     if (h === "stats") return renderStats();
-    if (bySlug[h]) renderProject(bySlug[h]);
+    if (h === "resume" && resume) renderResume();
+    else if (bySlug[h]) renderProject(bySlug[h]);
     else renderHome(h);
     armEditor();
+  }
+
+  // ---------- nav ----------
+  function navLink(id, label, href) {
+    var a = document.createElement("a");
+    a.id = id; a.href = href; a.textContent = label;
+    document.querySelector(".nav nav").insertBefore(a, document.getElementById("navGithub"));
+    return a;
+  }
+  function navLinks() {
+    if (resume) navLink("navResume", "Resume", "./#resume");
+    if (isMe()) ownerLinks();
+  }
+  // only in a browser that has opened the stats page
+  function ownerLinks() {
+    if (document.getElementById("navEdit")) return;
+    navLink("navViews", "Views", "./#stats").className = "owner";
+    navLink("navEdit", "Edit", "#").className = "owner";
+    document.getElementById("navEdit").addEventListener("click", function (e) {
+      e.preventDefault();
+      if (editing) return;
+      var a = this;
+      a.textContent = "Signing in…";
+      firebase().then(startEditing).then(function () { a.textContent = "Edit"; }, function (err) {
+        a.textContent = "Edit";
+        alert("Couldn’t start editing: " + (err.message || err.code));
+      });
+    });
   }
 
   // ---------- home ----------
@@ -144,8 +181,8 @@
     var gs = (site.groups || []).filter(function (g) { return used[g.id]; });
     main.innerHTML =
       '<section class="hero wrap">' +
-        "<h1" + ed(SITE, "headline") + ">" + esc(site.headline || "") + "</h1>" +
-        (site.intro || editing ? "<p" + ed(SITE, "intro") + ">" + esc(site.intro || "") + "</p>" : "") +
+        "<h1" + ed("@site", "headline") + ">" + esc(site.headline || "") + "</h1>" +
+        (site.intro || editing ? "<p" + ed("@site", "intro") + ">" + esc(site.intro || "") + "</p>" : "") +
         '<div class="hero-meta"><span><b>' + all.length + "</b> projects</span>" +
           (gs.length ? "<span>" + gs.map(function (g) { return esc(g.label); }).join(" · ") + "</span>" : "") +
           (site.github ? '<a href="' + esc(site.github) + '">Code on GitHub</a>' : "") + "</div>" +
@@ -174,7 +211,7 @@
     if (back) { back.scrollIntoView({ block: "center" }); lastSlug = ""; }
     else if (anchor === "work") document.getElementById("work").scrollIntoView();
     else window.scrollTo(0, 0);
-    count(tag ? "pf-" + tag : "pf");
+    count(tagged("pf"));
   }
   function featureRow(p) {
     var shot = list(p.d.screens, 1)[0];
@@ -300,6 +337,26 @@
     if (t.first.slice(0, 7) === t.last.slice(0, 7)) return "Built " + monthOf(t.last) + " " + y;
     return "Built " + monthOf(t.first) + (t.first.slice(0, 4) === y ? "" : " " + t.first.slice(0, 4)) + " – " + monthOf(t.last) + " " + y;
   }
+  // rough words for the simple view: "Early Sep", "about 3 weeks"
+  function roughStart(s) { var d = +s.slice(8, 10); return (d <= 10 ? "Early " : d <= 20 ? "Mid " : "Late ") + monthOf(s); }
+  function roughLength(t) {
+    if (Date.now() - utc(t.last) < 21 * 864e5 && utc(t.last) - utc(t.first) > 14 * 864e5) return "ongoing";
+    var days = Math.round((utc(t.last) - utc(t.first)) / 864e5) + 1;
+    if (days === 1) return "a day";
+    if (days <= 5) return "a few days";
+    if (days <= 10) return "about a week";
+    if (days <= 45) return "about " + Math.round(days / 7) + " weeks";
+    return "about " + Math.round(days / 30) + " months";
+  }
+  var tlDetail = false;
+  main.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-tl]");
+    if (!b) return;
+    tlDetail = b.dataset.tl === "detail";
+    var old = document.getElementById("timeline");
+    old.outerHTML = timelineSection();
+    document.getElementById("timeline").querySelector("[data-tl]").focus({ preventScroll: true });
+  });
   function timelineSection() {
     var rows = all.map(function (p) { return { p: p, t: timeline && timeline.projects[p.repo] }; })
       .filter(function (r) { return r.t && r.t.first && r.t.last; })
@@ -318,10 +375,23 @@
       return '<span style="left:' + at(+m) + '">' + label + "</span>";
     }).join("");
     var howLong = months.length === 1 ? "one month" : months.length + " months";
-    return '<section class="wrap timeline" id="timeline" aria-labelledby="timelineTitle">' +
-      '<div class="section-title"><h2 id="timelineTitle">Timeline</h2></div>' +
-      '<p class="section-sub">' + rows.length + " projects over " + howLong + ", from each one’s commit history. Each mark is a day of work.</p>" +
-      '<div class="tl"><div class="tl-head" aria-hidden="true"><span></span><div class="tl-axis">' + axis + "</div><span></span></div>" +
+    var head = '<section class="wrap timeline' + (tlDetail ? " detail" : "") + '" id="timeline" aria-labelledby="timelineTitle">' +
+      '<div class="section-title"><h2 id="timelineTitle">Timeline</h2>' +
+        '<button type="button" class="tl-toggle" data-tl="' + (tlDetail ? "simple" : "detail") + '">' + (tlDetail ? "Simpler view" : "Show each day") + "</button></div>" +
+      '<p class="section-sub">' + (tlDetail
+        ? rows.length + " projects over " + howLong + ", from each one’s commit history. Each mark is a day of work."
+        : "Roughly when each project started and how long it took.") + "</p>" +
+      '<div class="tl"><div class="tl-head" aria-hidden="true"><span></span><div class="tl-axis">' + axis + "</div><span></span></div>";
+    if (!tlDetail) {
+      return head + '<ol class="tl-rows">' + rows.map(function (r) {
+        var t = r.t, left = utc(t.first), right = utc(t.last) + 864e5;
+        return '<li class="tl-row"' + vars(r.p) + '><a class="tl-name" href="#' + r.p.slug + '">' + esc(r.p.name) + "</a>" +
+          '<div class="tl-track" aria-hidden="true">' + lines +
+            '<span class="tl-span" style="left:' + at(left) + ";width:calc(" + at(right) + " - " + at(left) + ')"></span></div>' +
+          '<span class="tl-meta">' + roughStart(t.first) + " · " + roughLength(t) + "</span></li>";
+      }).join("") + "</ol></div></section>";
+    }
+    return head +
       '<ol class="tl-rows">' + rows.map(function (r) {
         var t = r.t, days = Object.keys(t.days || {}).sort();
         var ticks = days.map(function (d) {
@@ -347,9 +417,10 @@
   function ed(repo, path) {
     if (!editing) return "";
     var leaf = path.split(".").filter(function (s) { return !/^\d+$/.test(s); }).pop();
-    return ' data-edit="' + esc(repo + "|" + path) + '" data-max="' + (LIMITS[path] || LIMITS[leaf] || 200) + '"';
+    var max = repo === "@resume" ? { summary: 700, points: 260, note: 200 }[leaf] || 120 : LIMITS[path] || LIMITS[leaf] || 200;
+    return ' data-edit="' + esc(repo + "|" + path) + '" data-max="' + max + '"';
   }
-  var source = function (repo) { return repo === SITE ? site : byRepo[repo] && byRepo[repo].d; };
+  var source = function (key) { return key === "@site" ? site : key === "@resume" ? resume : byRepo[key] && byRepo[key].d; };
   var getPath = function (o, path) { return path.split(".").reduce(function (v, k) { return v == null ? v : v[k]; }, o); };
   function setPath(o, path, value) {
     var keys = path.split(".");
@@ -465,8 +536,9 @@
   }
   // Commits one repo's changes. Each value is swapped in where it sits in the file, so the
   // file keeps its hand formatting; if a value can't be found exactly once, it's rewritten.
-  function commit(repo, changes) {
-    var files = repo === SITE ? ["site.json"] : ["overview/overview.json", "public/overview/overview.json"];
+  function commit(key, changes) {
+    var repo = key.charAt(0) === "@" ? SITE : key;
+    var files = key === "@site" ? ["site.json"] : key === "@resume" ? ["resume.json"] : ["overview/overview.json", "public/overview/overview.json"];
     var get = function (i) {
       return gh("repos/" + OWNER + "/" + repo + "/contents/" + files[i]).then(function (f) { return { path: files[i], f: f }; }, function (e) {
         if (e.status === 404 && i + 1 < files.length) return get(i + 1);
@@ -525,8 +597,71 @@
       }).then(function (me) {
         if (String(me.login).toLowerCase() !== OWNER) { ghToken = ""; throw new Error("that GitHub account isn’t " + OWNER + "."); }
         editing = true;
-        location.hash = "";
+        route();
       });
+  }
+
+  // ---------- resume ----------
+  // resume.json: name, title, location, summary, links[{label,url}],
+  // experience[{role, org, where, start, end, points[]}], education[{school, degree, start, end, note}],
+  // skills[{group, items[]}]. resume.pdf (made from this page by tools/resume-pdf.mjs) is the download.
+  function renderResume() {
+    var r = resume, R = "@resume";
+    document.title = "Resume · " + (site.name || "");
+    var when = function (x) { return esc([str(x.start, 20), str(x.end, 20)].filter(Boolean).join(" – ")); };
+    var links = list(r.links, 6).map(function (l) { return { label: str(l && l.label, 40), url: safeUrl(str(l && l.url, 300), location.href) }; })
+      .filter(function (l) { return l.label && l.url; });
+    var html = '<article class="wrap resume">' +
+      '<header class="r-head"><div>' +
+        "<h1" + ed(R, "name") + ">" + esc(str(r.name, 60)) + "</h1>" +
+        (str(r.title) ? '<p class="r-title"' + ed(R, "title") + ">" + esc(str(r.title, 80)) + "</p>" : "") +
+        '<p class="r-contact">' + [str(r.location, 60) ? "<span" + ed(R, "location") + ">" + esc(str(r.location, 60)) + "</span>" : ""]
+          .concat(links.map(function (l) { return '<a href="' + esc(l.url) + '">' + esc(l.label) + "</a>"; })).filter(Boolean).join('<span class="dot">·</span>') + "</p>" +
+      "</div>" +
+      '<div class="r-actions no-print"><a class="btn solid" id="resumeDownload" href="resume.pdf" download="' + esc(slugify(str(r.name, 60) || "resume")) + '-resume.pdf">' +
+        svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>') + "Download PDF</a></div></header>" +
+      (str(r.summary) ? '<p class="r-summary"' + ed(R, "summary") + ">" + esc(str(r.summary, 700)) + "</p>" : "") +
+      '<div class="r-cols"><div class="r-main">';
+    var jobs = list(r.experience, 12);
+    if (jobs.length) {
+      html += '<section class="r-sec"><h2>Experience</h2>' + jobs.map(function (j, i) {
+        var at = "experience." + i;
+        return '<div class="r-item"><div class="r-item-head"><h3><span' + ed(R, at + ".role") + ">" + esc(str(j.role, 80)) + "</span>" +
+            (str(j.org) ? ' <span class="r-org"' + ed(R, at + ".org") + ">" + esc(str(j.org, 80)) + "</span>" : "") + "</h3>" +
+            '<span class="r-when">' + when(j) + (str(j.where) ? " · " + esc(str(j.where, 40)) : "") + "</span></div>" +
+          (list(j.points, 8).length ? "<ul>" + list(j.points, 8).map(function (pt, k) {
+            return "<li" + ed(R, at + ".points." + k) + ">" + esc(str(pt, 260)) + "</li>";
+          }).join("") + "</ul>" : "") + "</div>";
+      }).join("") + "</section>";
+    }
+    html += '<section class="r-sec no-print-break"><h2>Selected projects</h2><p class="r-note">Everything here was designed and built by me. ' +
+      '<a href="' + HOME + '#work">See all ' + all.length + " projects</a>.</p><ul class=\"r-projects\">" +
+      list(site.featured, 4).map(function (repo) { return byRepo[repo]; }).filter(Boolean).map(function (p) {
+        return '<li><a href="' + HOME + "#" + p.slug + '"' + vars(p) + "><b>" + esc(p.name) + "</b><span>" + esc(str(p.d.tagline, 60)) + "</span></a></li>";
+      }).join("") + "</ul></section>";
+    html += '</div><aside class="r-side">';
+    var skills = list(r.skills, 8);
+    if (skills.length) {
+      html += '<section class="r-sec"><h2>Skills</h2>' + skills.map(function (g, i) {
+        return '<div class="r-skill"><h3' + ed(R, "skills." + i + ".group") + ">" + esc(str(g.group, 40)) + "</h3><p>" +
+          list(g.items, 20).map(function (it, k) { return "<span" + ed(R, "skills." + i + ".items." + k) + ">" + esc(str(it, 40)) + "</span>"; }).join(", ") + "</p></div>";
+      }).join("") + "</section>";
+    }
+    var schools = list(r.education, 6);
+    if (schools.length) {
+      html += '<section class="r-sec"><h2>Education</h2>' + schools.map(function (e, i) {
+        var at = "education." + i;
+        return '<div class="r-item"><h3' + ed(R, at + ".school") + ">" + esc(str(e.school, 80)) + "</h3>" +
+          (str(e.degree) ? "<p" + ed(R, at + ".degree") + ">" + esc(str(e.degree, 100)) + "</p>" : "") +
+          '<span class="r-when">' + when(e) + "</span>" +
+          (str(e.note) ? '<p class="r-note"' + ed(R, at + ".note") + ">" + esc(str(e.note, 200)) + "</p>" : "") + "</div>";
+      }).join("") + "</section>";
+    }
+    main.innerHTML = html + "</aside></div></article>";
+    document.getElementById("resumeDownload").addEventListener("click", function () { count(tagged("rd")); });
+    window.scrollTo(0, 0);
+    main.focus({ preventScroll: true });
+    count(tagged("rv"));
   }
 
   // ---------- views, for you only ----------
@@ -555,20 +690,12 @@
   function renderStats() {
     document.title = "Views · " + (site.name || "");
     try { localStorage.setItem(ME, "1"); } catch (e) {}
+    if (isMe()) ownerLinks();
     main.innerHTML = '<section class="wrap stats"><a class="back" href="./">' + BACK + "Projects</a>" +
       "<h1>Views</h1><p class=\"lead\">Only you can see these. This browser's own visits aren't counted.</p>" +
-      '<div class="edit-cta"><button type="button" class="btn" id="editBtn">Edit the text</button>' +
-      "<span>Change the words on the site in place. Saving commits them to GitHub.</span></div>" +
+
       '<div id="statsBody"><p class="loading">Checking you’re signed in…</p></div></section>';
     var body = function (h) { var el = document.getElementById("statsBody"); if (el) el.innerHTML = h; };
-    document.getElementById("editBtn").addEventListener("click", function () {
-      var b = this, tip = b.nextElementSibling;
-      b.disabled = true;
-      firebase().then(startEditing).catch(function (e) {
-        b.disabled = false;
-        tip.textContent = "Couldn’t start editing: " + (e.message || e.code);
-      });
-    });
     firebase().then(function (fb) {
       fb.auth().onAuthStateChanged(function (user) {
         if (!user) {
@@ -584,18 +711,21 @@
           return;
         }
         fb.firestore().collection("showcase_visits").orderBy("at", "desc").limit(5000).get().then(function (snap) {
-          var home = {}, proj = {}, total = 0, month = 0, cutoff = Date.now() - 30 * 864e5;
+          var home = {}, proj = {}, cv = {}, total = 0, month = 0, cutoff = Date.now() - 30 * 864e5;
           var add = function (m, key, at) { var r = m[key] || (m[key] = { n: 0, last: 0 }); r.n++; if (at > r.last) r.last = at; };
           snap.docs.forEach(function (doc) {
             var v = doc.data(), k = String(v.k || ""), at = v.at && v.at.toMillis ? v.at.toMillis() : 0;
             if (k === "pf" || k.indexOf("pf-") === 0) { add(home, k === "pf" ? "" : k.slice(3), at); total++; if (at > cutoff) month++; }
             else if (k.indexOf("pp-") === 0) add(proj, k.slice(3), at);
+            else if (/^r[vd](-|$)/.test(k)) add(cv, k.slice(0, 2) + "|" + k.slice(3), at);
           });
           var rows = function (m, label) {
             var keys = Object.keys(m).sort(function (a, b) { return m[b].n - m[a].n; });
             return keys.length ? "<table><thead><tr><th>" + label + '</th><th style="text-align:right">Views</th><th>Last</th></tr></thead><tbody>' +
               keys.map(function (key) {
-                var name = label === "Project" ? (bySlug[key] ? bySlug[key].name : key) : (key ? "for=" + key : "Direct, no tag");
+                var name = label === "Project" ? (bySlug[key] ? bySlug[key].name : key)
+                  : label === "Resume" ? (key.slice(0, 2) === "rd" ? "Downloaded" : "Viewed") + (key.slice(3) ? ", for=" + key.slice(3) : "")
+                  : (key ? "for=" + key : "Direct, no tag");
                 return "<tr><td>" + esc(name) + '</td><td class="n">' + m[key].n + "</td><td>" + when(m[key].last) + "</td></tr>";
               }).join("") + "</tbody></table>" : '<p class="lead" style="margin-top:12px">None yet.</p>';
           };
@@ -604,6 +734,7 @@
             "<div><b>" + Object.keys(home).filter(Boolean).length + "</b><span>tagged links opened</span></div></div>" +
             "<h2>Who it came from</h2>" + rows(home, "Link") +
             "<h2>Project pages</h2>" + rows(proj, "Project") +
+            (resume ? "<h2>Resume</h2>" + rows(cv, "Resume") : "") +
             '<p class="lead" style="margin-top:28px">Tag a link to see where views come from: <code>' +
             esc(location.origin + location.pathname) + "?for=acme</code>. A tag is lowercase letters, numbers and dashes.</p>");
         }, function (e) {
