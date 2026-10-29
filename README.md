@@ -14,6 +14,18 @@ Everything is in `site.json`:
 
 A project page lives at `#<slug>`, where the slug is the project's name in lowercase with dashes (`#writers-blocks`).
 
+## Timeline
+
+The home page ends with a timeline of when each project was built: a mark for every day with commits, from `timeline.json`. `tools/timeline.mjs` makes that file from each repo's commit history, leaving out commits whose message mentions the overview. The Timeline workflow runs it every morning and commits the result when it changes; run it by hand from the Actions tab, or locally with `node tools/timeline.mjs`.
+
+A project page's "Built Sep – Oct 2026" (or "Since …" while it's still being worked on) comes from the same file.
+
+## Editing the text
+
+Open `#stats` and press **Edit the text**. A GitHub popup asks for repo access, then every piece of text on the site gets a dashed outline: click it and type. Pending changes stay as you move between pages; **Save** commits them, one commit per repo, to `site.json` or that project's `overview.json`, so the launchpad's About pages change too. Text that's too long for its spot turns red and blocks saving. The live site catches up a minute or two after saving.
+
+The access lives only in that tab: reload, or press **Done**, and you're out of edit mode. On a local copy, `?edit-preview` shows edit mode without signing in (Save won't work there).
+
 ## Views
 
 Visits are counted in Firestore `showcase_visits` (project github-projects-5d4e4): one per browser session for the home page (`pf`) and each project page (`pp-<slug>`). Add `?for=<tag>` to a link you send (letters, digits and dashes, up to 16) and its visits are counted separately as `pf-<tag>`, so you can tell which link was opened. Nothing on the page shows the tag.
