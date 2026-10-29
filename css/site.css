@@ -235,7 +235,8 @@ body.editing { padding-bottom: 88px; }
 
 /* owner-only nav links */
 /* dotted: a reminder that visitors don't see these */
-.nav nav a.owner { color: var(--muted); font-weight: 500; padding: 4px 10px; margin: -4px -6px; border: 1.5px dotted color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 8px; }
+.nav nav a.owner { color: var(--muted); font-weight: 500; padding: 4px 10px; margin: -4px 0; border: 1.5px dotted color-mix(in srgb, var(--ink) 35%, transparent); border-radius: 8px; }
+.nav nav a.owner.first { margin-left: 10px; }
 .nav nav a.owner:hover { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 60%, transparent); }
 .nav nav { display: flex; gap: 22px; }
 @media (max-width: 479px) { .nav nav { gap: 14px; } .nav nav a { font-size: 0.86rem; } }

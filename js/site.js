@@ -144,10 +144,11 @@
   }
 
   // ---------- nav ----------
-  function navLink(id, label, href) {
+  // the site's own links go before GitHub; owner links go at the very end, set apart
+  function navLink(id, label, href, last) {
     var a = document.createElement("a");
     a.id = id; a.href = href; a.textContent = label;
-    document.querySelector(".nav nav").insertBefore(a, document.getElementById("navGithub"));
+    document.querySelector(".nav nav").insertBefore(a, last ? null : document.getElementById("navGithub"));
     return a;
   }
   function navLinks() {
@@ -157,8 +158,8 @@
   // only in a browser that has opened the stats page
   function ownerLinks() {
     if (document.getElementById("navEdit")) return;
-    navLink("navViews", "Views", "./#stats").className = "owner";
-    navLink("navEdit", "Edit", "#").className = "owner";
+    navLink("navViews", "Views", "./#stats", true).className = "owner first";
+    navLink("navEdit", "Edit", "#", true).className = "owner";
     document.getElementById("navEdit").addEventListener("click", function (e) {
       e.preventDefault();
       if (editing) return;
