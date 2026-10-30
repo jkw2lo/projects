@@ -1,6 +1,6 @@
 {
   "url": "http://127.0.0.1:8865/",
-  "note": "Background Studio runs on the Mac. Shot from a second copy started like start.sh with BGSTUDIO_DATA pointed at a scratch folder, --port 8865 --no-browser, its output set to a scratch folder, and eight made-up scans of trip keepsakes (tickets, stamps, stickers, a postcard, a cup). Sort & tag was set up with five categories and five pictures tagged. Scratch paths are shown as the defaults.",
+  "note": "Background Studio runs on the Mac. Shot from a second copy started like start.sh with BGSTUDIO_DATA pointed at a scratch folder, --port 8865 --no-browser, its output set to a scratch folder, and eight made-up scans of trip keepsakes (tickets, stamps, stickers, a postcard, a cup). Sort & tag was set up with five categories and five pictures tagged. Scratch paths are shown as the defaults. Compare & merge was given three made-up folders: the scans (A), a phone backup with exact and resized copies plus one new picture (B), and four cut-outs (C).",
   "shots": [
     {
       "file": "desktop.png",
@@ -41,6 +41,20 @@
         57,
         1440,
         785
+      ]
+    },
+    {
+      "file": "compare.png",
+      "url": "http://127.0.0.1:8865/compare",
+      "settle": 3000,
+      "steps": [
+        "wait:3000"
+      ],
+      "region": [
+        0,
+        57,
+        1440,
+        760
       ]
     }
   ]

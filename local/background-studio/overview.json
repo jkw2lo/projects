@@ -1,11 +1,11 @@
 {
   "version": 3,
   "name": "Background Studio",
-  "tagline": "Cut-outs from scans, in bulk",
-  "pitch": "Removes backgrounds from hundreds of scans and photos at once, offline, without tearing tickets or stamps apart.",
+  "tagline": "Cut out, sort and compare pictures",
+  "pitch": "Removes backgrounds from scans in bulk, sorts pictures into your own categories, and finds copies across folders.",
   "accent": "#4f46e5",
   "status": "In progress",
-  "problem": "AI cut-out tools tear printed tickets and stamps apart.",
+  "problem": "Scanned keepsakes pile up: uncut, unsorted and saved twice.",
   "stats": [
     {
       "value": "0",
@@ -16,18 +16,18 @@
       "label": "categories, each on its own key"
     },
     {
-      "value": "6",
-      "label": "image formats, iPhone HEIC included"
+      "value": "~15 s",
+      "label": "to compare 400 files across folders"
     }
   ],
   "features": [
     {
-      "title": "Fine-tune any image",
-      "text": "Compare before and after, then fix edges, straighten, crop or touch up.",
+      "title": "Cut-outs from scans",
+      "text": "Auto-detect picks a method per scan; then fine-tune it before and after.",
       "details": [
-        "Brushes to keep or erase by hand",
-        "Copy one image's settings onto the next",
-        "Save and go to the next, through a whole folder"
+        "Fills a ticket's outline so nothing printed is lost",
+        "Keeps a stamp's ink and drops the paper",
+        "Edges, straightening, cropping and brushes"
       ],
       "screen": {
         "src": "editor.png",
@@ -39,8 +39,7 @@
       "text": "File pictures into your own categories, one key press each.",
       "details": [
         "Suggests a category and learns from every tag",
-        "Then copy into folders, Finder tags or a spreadsheet",
-        "Compare and merge folders, too"
+        "Then copy into folders, Finder tags or a spreadsheet"
       ],
       "screen": {
         "src": "sort.png",
@@ -48,13 +47,17 @@
       }
     },
     {
-      "title": "Made for scans",
-      "text": "Auto-detect picks a method per scan: cut-out, ink only, or keep as is.",
+      "title": "Compare and merge",
+      "text": "A diagram shows which folders hold each picture, and which are copies.",
       "details": [
-        "Fills a ticket's outline so nothing printed is lost",
-        "Keeps a stamp's ink and drops the paper",
-        "Leaves a postcard that fills the scan alone"
-      ]
+        "Exact copies, re-saved ones and edited versions",
+        "Merge into one folder, keeping the best of each",
+        "Leftover copies go to the Trash, not deleted"
+      ],
+      "screen": {
+        "src": "compare.png",
+        "alt": "Three folders as a Venn diagram: Amalfi scans, Phone backup and Cut-outs, with 4 matches between the first two, 3 in all three, and one picture only in each"
+      }
     },
     {
       "title": "Private by design",
