@@ -316,7 +316,7 @@
         "<h1>" + esc(p.name) + "</h1>" +
         (str(d.tagline) ? '<p class="tagline"' + ed(p.repo, "tagline") + ">" + esc(str(d.tagline, 60)) + "</p>" : "") +
         (str(d.pitch) ? '<p class="pitch"' + ed(p.repo, "pitch") + ">" + esc(str(d.pitch, 200)) + "</p>" : "") +
-        (p.url ? '<div class="p-actions"><a class="btn accent" href="' + esc(p.url) + '" target="_blank" rel="noopener">Open the app ' + OUT + "</a>" +
+        (p.url ? '<div class="p-actions"><a class="btn accent" href="' + esc(p.url) + '?from=portfolio" target="_blank" rel="noopener">Open the app ' + OUT + "</a>" +
           '<a class="btn" href="https://github.com/jkw2lo/' + esc(p.repo) + '">Source</a></div>'
           : '<p class="p-local">' + esc(p.local) + "</p>") +
         (facts.length ? '<ul class="p-facts">' + facts.map(function (x) { return "<li" + x[1] + ">" + esc(x[0]) + "</li>"; }).join("") + "</ul>" : "") +

@@ -45,6 +45,12 @@ The access lives only in that tab: reload, or press **Done**, and you're out of 
 
 The **Download PDF** button serves `resume.pdf`, which is the same page printed: the Resume PDF workflow remakes it whenever `resume.json` or the site's code changes (or locally: `node tools/resume-pdf.mjs`), so a save from the form updates the PDF a few minutes later.
 
+## Demo or fresh start
+
+**Open the app** links add `?from=portfolio`. An app that has `demo-welcome.js` then offers a visitor with nothing saved two ways in: **See the demo** (the app filled with sample data, so nothing is locked and there's no setup) or **Start fresh**. While the demo is in use, a small banner offers Start fresh. Anyone arriving another way never sees it.
+
+`tools/demo-welcome.js` is the master copy; each app keeps its own copy and supplies its sample and how to clear it (see the comment at the top of the file). So far: Nihongo Quest, Trip Board and Writers Blocks.
+
 ## Views
 
 Visits are counted in Firestore `showcase_visits` (project github-projects-5d4e4): one per browser session for the home page (`pf`) and each project page (`pp-<slug>`). Add `?for=<tag>` to a link you send (letters, digits and dashes, up to 16) and its visits are counted separately as `pf-<tag>`, so you can tell which link was opened. Nothing on the page shows the tag.
