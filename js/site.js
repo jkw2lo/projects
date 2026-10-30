@@ -110,7 +110,9 @@
     return Promise.all((s.projects || []).map(function (entry) {
       var repo = String(entry.repo || "");
       if (!/^[A-Za-z0-9._-]+$/.test(repo)) return null;
-      var base = new URL("../" + repo + "/overview/", location.href).href;
+      // a project that only runs on a computer (no Pages site) keeps its overview here, in local/<repo>/
+      var local = str(entry.local, 80);
+      var base = new URL(local ? "local/" + repo + "/" : "../" + repo + "/overview/", location.href).href;
       return fetch(base + "overview.json", { cache: "no-cache" })
         .then(function (r) { return r.ok ? r.json() : null; }, function () { return null; })
         .then(function (d) {
@@ -118,8 +120,8 @@
           var accent = /^#[0-9a-f]{6}$/i.test(d.accent || "") ? d.accent : "#141414";
           var name = str(d.name, 60) || repo;
           return {
-            repo: repo, d: d, base: base, name: name, slug: slugify(name), group: entry.group || "",
-            accent: accent, ink: inkOn(accent), url: "https://jkw2lo.github.io/" + repo + "/"
+            repo: repo, d: d, base: base, name: name, slug: slugify(name), group: entry.group || "", local: local,
+            accent: accent, ink: inkOn(accent), url: local ? "" : "https://jkw2lo.github.io/" + repo + "/"
           };
         });
     }));
@@ -314,8 +316,9 @@
         "<h1>" + esc(p.name) + "</h1>" +
         (str(d.tagline) ? '<p class="tagline"' + ed(p.repo, "tagline") + ">" + esc(str(d.tagline, 60)) + "</p>" : "") +
         (str(d.pitch) ? '<p class="pitch"' + ed(p.repo, "pitch") + ">" + esc(str(d.pitch, 200)) + "</p>" : "") +
-        '<div class="p-actions"><a class="btn accent" href="' + esc(p.url) + '">Open the app ' + OUT + "</a>" +
-          '<a class="btn" href="https://github.com/jkw2lo/' + esc(p.repo) + '">Source</a></div>' +
+        (p.url ? '<div class="p-actions"><a class="btn accent" href="' + esc(p.url) + '">Open the app ' + OUT + "</a>" +
+          '<a class="btn" href="https://github.com/jkw2lo/' + esc(p.repo) + '">Source</a></div>'
+          : '<p class="p-local">' + esc(p.local) + "</p>") +
         (facts.length ? '<ul class="p-facts">' + facts.map(function (x) { return "<li" + x[1] + ">" + esc(x[0]) + "</li>"; }).join("") + "</ul>" : "") +
       "</div>" +
       (screens[0] ? '<div class="frame' + (screens[0].frame === "phone" ? " phone" : "") + '">' + img(p, screens[0], "eager") + "</div>" : "") +
@@ -585,8 +588,9 @@
   // Commits one repo's changes. Each value is swapped in where it sits in the file, so the
   // file keeps its hand formatting; if a value can't be found exactly once, it's rewritten.
   function commit(key, changes) {
-    var repo = key.charAt(0) === "@" ? SITE : key;
-    var files = key === "@site" ? ["site.json"] : ["overview/overview.json", "public/overview/overview.json"];
+    var local = byRepo[key] && byRepo[key].local;
+    var repo = key.charAt(0) === "@" || local ? SITE : key;
+    var files = key === "@site" ? ["site.json"] : local ? ["local/" + key + "/overview.json"] : ["overview/overview.json", "public/overview/overview.json"];
     var get = function (i) {
       return gh("repos/" + OWNER + "/" + repo + "/contents/" + files[i]).then(function (f) { return { path: files[i], f: f }; }, function (e) {
         if (e.status === 404 && i + 1 < files.length) return get(i + 1);

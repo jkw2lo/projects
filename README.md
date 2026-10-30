@@ -12,6 +12,8 @@ Everything is in `site.json`:
 - `featured`: repos shown large, in order, above the grid (up to 4; also the resume's Selected projects). In edit mode the home page has a panel to add, remove and reorder them.
 - `projects`: every repo on the site, in grid order, each with a `group` (one of `groups`, which become the filter buttons). Remove a line to hide a project.
 
+A project that doesn't have a Pages site (a Chrome extension, a Mac app, a private repo) gets `"local": "<how it runs>"` in its entry. Its overview, screenshots and `shots.json` then live in this repo under `local/<repo>/`, along with `days.json` (its commit days, for the timeline, taken from the project's own git history). Its page shows the `local` text where the Open button would be.
+
 A project page lives at `#<slug>`, where the slug is the project's name in lowercase with dashes (`#writers-blocks`).
 
 ## Timeline

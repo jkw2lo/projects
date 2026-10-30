@@ -1,0 +1,81 @@
+{
+  "version": 3,
+  "name": "Magpie",
+  "tagline": "Every open tab, on one mood board",
+  "pitch": "A Chrome extension that files any page in two clicks and tags the products you've already looked at.",
+  "accent": "#2f6f86",
+  "status": "In progress",
+  "problem": "Forty tabs stay open just in case, and every re-sort looks new.",
+  "stats": [
+    {
+      "value": "2",
+      "label": "clicks to file a page, and close the tab"
+    },
+    {
+      "value": "7",
+      "label": "days each product is remembered, adjustable"
+    },
+    {
+      "value": "5",
+      "label": "stores tested for tags, Zara to Amazon"
+    }
+  ],
+  "features": [
+    {
+      "title": "Two-click saving",
+      "text": "A button in the corner of every page fans out your collections.",
+      "details": [
+        "Alt+Shift+S opens it; each bubble's number is its key",
+        "Hold Shift to close the tab as it saves",
+        "Right-click a photo to make it the cover"
+      ],
+      "screen": {
+        "src": "save.png",
+        "alt": "Magpie's save menu fanned out from the corner of a page: numbered bubbles for Rings, Dresses, New apartment, Honeymoon and Recipes, with Dresses highlighted"
+      }
+    },
+    {
+      "title": "What you've already seen",
+      "text": "On a store's grid, products you've scrolled past get a tag on their photo.",
+      "details": [
+        "So after a re-sort you can tell what's new",
+        "Seen 3× for each look an hour or more apart",
+        "Fade them instead, or switch it off per site"
+      ],
+      "screen": {
+        "src": "seen.png",
+        "alt": "A store's grid of dresses and rings with tags on the photos: Seen, Saved, Opened, Seen 3×, and one new item with no tag"
+      }
+    },
+    {
+      "title": "A board to decide on",
+      "text": "Rate, tag, rank and compare your saves side by side.",
+      "details": [
+        "Shortlist, maybe or pass with one key",
+        "Sticky-note tags like too short or good colour",
+        "Each save says whether it comes in your size"
+      ]
+    },
+    {
+      "title": "Details filled in",
+      "text": "With an API key, Claude reads each page for the specs that matter.",
+      "details": [
+        "Cut and carat for a ring, fabric for a dress",
+        "Photos kept even after a listing comes down"
+      ]
+    }
+  ],
+  "screens": [
+    {
+      "src": "desktop.png",
+      "alt": "The Magpie board: collections down the left, and saved dresses, rings, a sofa and a recipe as cards with ratings, prices, sizes and note tags",
+      "caption": "Nine saves across five collections"
+    }
+  ],
+  "facts": {
+    "worksOn": "Chrome on desktop",
+    "data": "In your Chrome profile",
+    "builtWith": "Plain JS, bundled with esbuild",
+    "started": "Oct 2026"
+  }
+}

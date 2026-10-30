@@ -1,0 +1,59 @@
+{
+  "url": "http://localhost:8737/dev/board.html",
+  "note": "Magpie is a Chrome extension; its dev pages (npm run preview in the magpie repo) show the board and the in-page saver with sample data.",
+  "shots": [
+    {
+      "file": "desktop.png",
+      "settle": 3000,
+      "steps": [
+        "wait:3000",
+        "click:#grid .pin-btn.on",
+        "wait:3500"
+      ]
+    },
+    {
+      "file": "seen.png",
+      "url": "http://localhost:8737/dev/listing.html",
+      "size": [
+        1280,
+        800
+      ],
+      "scale": 1.5,
+      "settle": 2500,
+      "steps": [
+        "wait:1500",
+        "eval:const now = Date.now(), H = 3600e3, r = (slug, count, opens, ago) => ['localhost/products/' + slug, { key: 'localhost/products/' + slug, first: now - ago * H * 30, last: now - ago * H, count, opens, lastOpened: opens ? now - ago * H : 0 }]; localStorage.setItem('shim.seen', JSON.stringify(Object.fromEntries([r('elowen-gown-0', 1, 0, 20), r('odette-gown-2', 2, 1, 26), r('isla-gown-4', 3, 0, 5), r('juno-gown-6', 1, 0, 20), r('noor-gown-8', 2, 0, 48), r('ines-gown-9', 1, 0, 20), r('petra-gown-10', 1, 0, 20)])))",
+        "reload",
+        "wait:3500"
+      ],
+      "region": [
+        30,
+        64,
+        1220,
+        440
+      ]
+    },
+    {
+      "file": "save.png",
+      "url": "http://localhost:8737/dev/product.html",
+      "size": [
+        1280,
+        800
+      ],
+      "scale": 2,
+      "settle": 3000,
+      "steps": [
+        "tap:1235,755",
+        "wait:700",
+        "hover:1138,699",
+        "wait:500"
+      ],
+      "region": [
+        990,
+        580,
+        290,
+        220
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
   "title": "Projects",
   "brand": "Jen's Side Projects",
   "headline": "Small, careful apps for the things I actually do.",
-  "intro": "I design and build web apps for my own life: learning languages, planning trips and weeks, cooking, writing and making things by hand. Each one started with a problem I had, and each one runs in the browser with nothing to install.",
+  "intro": "I design and build web apps for my own life: learning languages, planning trips and weeks, cooking, writing and making things by hand. Each one started with a problem I had, and most run in the browser with nothing to install.",
   "github": "https://github.com/jkw2lo",
 
   "featured": ["writers-blocks", "learn_japanese_nihongo_quest", "trip_planner"],
@@ -35,6 +35,7 @@
     { "repo": "loose_leaf_notes", "group": "home" },
     { "repo": "skincare_shelf", "group": "home" },
     { "repo": "ring-shortlist", "group": "home" },
-    { "repo": "off-script", "group": "home" }
+    { "repo": "off-script", "group": "home" },
+    { "repo": "magpie", "group": "home", "local": "A Chrome extension, not in the Web Store yet" }
   ]
 }

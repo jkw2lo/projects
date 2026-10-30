@@ -7,6 +7,7 @@
 //   node tools/timeline.mjs          (GITHUB_TOKEN, if set, lifts the rate limit)
 //
 // The "Timeline" workflow runs this every day and commits the result when it changes.
+// Projects marked "local" in site.json are read from local/<repo>/days.json instead.
 
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -29,9 +30,12 @@ async function commits(repo) {
 }
 
 const projects = {};
-for (const { repo } of site.projects) {
-  const days = {};
-  for (const c of await commits(repo)) {
+for (const { repo, local } of site.projects) {
+  let days = {};
+  // a local-only project (private or not on GitHub) brings its own commit days in local/<repo>/days.json
+  if (local) {
+    try { days = JSON.parse(readFileSync(new URL(`../local/${repo}/days.json`, import.meta.url), "utf8")).days || {}; } catch {}
+  } else for (const c of await commits(repo)) {
     const msg = c.commit.message.split("\n")[0];
     if (SKIP.test(msg) || c.parents.length > 1) continue;
     const day = c.commit.author.date.slice(0, 10);
