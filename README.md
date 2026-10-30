@@ -49,7 +49,7 @@ The **Download PDF** button serves `resume.pdf`, which is the same page printed:
 
 **Open the app** links add `?from=portfolio`. An app that has `demo-welcome.js` then offers a visitor with nothing saved two ways in: **See the demo** (the app filled with sample data, so nothing is locked and there's no setup) or **Start fresh**. While the demo is in use, a small banner offers Start fresh. Anyone arriving another way never sees it.
 
-`tools/demo-welcome.js` is the master copy; each app keeps its own copy and supplies its sample and how to clear it (see the comment at the top of the file). So far: Nihongo Quest, Trip Board and Writers Blocks.
+`tools/demo-welcome.js` is the master copy; each app keeps its own copy and supplies its sample and how to clear it (see the comment at the top of the file). An app can also give a `tour`: a few steps, each going to a screen and lighting up one part with a sentence about it, run right after the demo loads. So far: Nihongo Quest (with a tour), Trip Board and Writers Blocks.
 
 ## Views
 
