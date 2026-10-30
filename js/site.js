@@ -182,7 +182,7 @@
   var lastSlug = "";
   function renderHome(anchor) {
     document.title = brand();
-    var featured = list(site.featured, 4).map(function (r) { return all.filter(function (p) { return p.repo === r; })[0]; }).filter(Boolean);
+    var featured = featuredRepos().map(function (r) { return byRepo[r]; }).filter(Boolean);
     var used = {};
     all.forEach(function (p) { used[p.group] = (used[p.group] || 0) + 1; });
     var gs = (site.groups || []).filter(function (g) { return used[g.id]; });
@@ -194,8 +194,8 @@
           (gs.length ? "<span>" + gs.map(function (g) { return esc(g.label); }).join(" · ") + "</span>" : "") +
           (site.github ? '<a href="' + esc(site.github) + '">Code on GitHub</a>' : "") + "</div>" +
       "</section>" +
-      (featured.length ? '<section class="wrap" aria-labelledby="featuredTitle">' +
-        '<div class="section-title"><h2 id="featuredTitle">Featured</h2></div>' +
+      (featured.length || editing ? '<section class="wrap" aria-labelledby="featuredTitle">' +
+        '<div class="section-title"><h2 id="featuredTitle">Featured</h2></div>' + (editing ? featurePicker() : "") +
         '<div class="featured">' + featured.map(featureRow).join("") + "</div></section>" : "") +
       '<section class="wrap" id="work" aria-labelledby="workTitle">' +
         '<div class="section-title"><h2 id="workTitle">All projects</h2></div>' +
@@ -220,6 +220,43 @@
     else window.scrollTo(0, 0);
     count(tagged("pf"));
   }
+  // the featured list, with any unsaved change from edit mode
+  var featuredRepos = function () { return list(pending["@site|featured"] || site.featured, 4); };
+  // edit mode: pick and order up to 4; it waits in `pending` like any other change
+  function featurePicker() {
+    var on = featuredRepos(), rest = all.filter(function (p) { return on.indexOf(p.repo) < 0; });
+    var btn = function (act, i, label, off) {
+      return '<button type="button" class="icon-btn" data-fp="' + act + '" data-i="' + i + '" aria-label="' + label + '" title="' + label + '"' + (off ? " disabled" : "") + ">" + ICON[act] + "</button>";
+    };
+    return '<div class="fp"><p class="fp-note">Shown large, in this order, and on your resume. Up to 4.</p><ol class="fp-list">' + on.map(function (r, i) {
+        var p = byRepo[r];
+        return '<li' + (p ? vars(p) : "") + '><b>' + esc(p ? p.name : r) + '</b><span class="rf-moves">' +
+          btn("up", i, "Move up", i === 0) + btn("down", i, "Move down", i === on.length - 1) + btn("remove", i, "Stop featuring") + "</span></li>";
+      }).join("") + "</ol>" +
+      (on.length < 4 ? '<label class="fp-add"><span>Add a project</span><select data-fp-add><option value="">Choose…</option>' +
+        rest.map(function (p) { return '<option value="' + esc(p.repo) + '">' + esc(p.name) + "</option>"; }).join("") + "</select></label>" : "") + "</div>";
+  }
+  function setFeatured(next) {
+    var same = JSON.stringify(next) === JSON.stringify(list(site.featured, 4));
+    if (same) delete pending["@site|featured"]; else pending["@site|featured"] = next;
+    var y = window.scrollY;
+    note = "";
+    route();
+    window.scrollTo({ top: y, behavior: "instant" });
+  }
+  main.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-fp]");
+    if (!b) return;
+    var on = featuredRepos().slice(), i = +b.dataset.i, act = b.dataset.fp;
+    if (act === "remove") on.splice(i, 1);
+    else on.splice(act === "up" ? i - 1 : i + 1, 0, on.splice(i, 1)[0]);
+    setFeatured(on);
+    var again = main.querySelector('[data-fp="' + act + '"][data-i="' + (act === "up" ? i - 1 : act === "down" ? i + 1 : i) + '"]:not(:disabled)');
+    if (again) again.focus({ preventScroll: true });
+  });
+  main.addEventListener("change", function (e) {
+    if (e.target.matches && e.target.matches("[data-fp-add]") && e.target.value) setFeatured(featuredRepos().concat(e.target.value));
+  });
   function featureRow(p) {
     var shot = list(p.d.screens, 1)[0];
     var points = list(p.d.features, 3).map(function (f, i) { return [str(f && f.title, 40), i]; }).filter(function (x) { return x[0]; });
@@ -561,15 +598,18 @@
       Object.keys(changes).forEach(function (path) {
         var old = getPath(obj, path), lit = JSON.stringify(old);
         setPath(obj, path, changes[path]);
+        var listAt = Array.isArray(old) && path.indexOf(".") < 0 && new RegExp('("' + path + '"\\s*:\\s*)\\[[^\\[\\]]*\\]', "g");
         if (out !== null && typeof old === "string" && out.split(lit).length === 2) {
           out = out.replace(lit, function () { return JSON.stringify(changes[path]); });
+        } else if (out !== null && listAt && (out.match(listAt) || []).length === 1) {
+          out = out.replace(listAt, function (m, key) { return key + JSON.stringify(changes[path]).replace(/","/g, '", "'); });
         } else out = null;
       });
       if (out === null || JSON.stringify(JSON.parse(out)) !== JSON.stringify(obj)) out = JSON.stringify(obj, null, 2) + "\n";
       var n = Object.keys(changes).length;
       return gh("repos/" + OWNER + "/" + repo + "/contents/" + got.path, {
         method: "PUT",
-        body: JSON.stringify({ message: "Edit " + (n === 1 ? "the " + Object.keys(changes)[0] : n + " bits of text") + " from the portfolio", content: encode(out), sha: got.f.sha })
+        body: JSON.stringify({ message: (n === 1 && changes.featured ? "Change the featured projects" : "Edit " + (n === 1 ? "the " + Object.keys(changes)[0] : n + " bits of text")) + " from the portfolio", content: encode(out), sha: got.f.sha })
       });
     });
   }
@@ -681,7 +721,7 @@
     }
     html += '<section class="r-sec no-print-break"><h2>Selected projects</h2><p class="r-note">Everything here was designed and built by me. ' +
       '<a href="' + HOME + '#work">See all ' + all.length + " projects</a>.</p><ul class=\"r-projects\">" +
-      list(site.featured, 4).map(function (repo) { return byRepo[repo]; }).filter(Boolean).map(function (p) {
+      featuredRepos().map(function (repo) { return byRepo[repo]; }).filter(Boolean).map(function (p) {
         return '<li><a href="' + HOME + "#" + p.slug + '"' + vars(p) + "><b>" + esc(p.name) + "</b><span>" + esc(str(p.d.tagline, 60)) + "</span></a></li>";
       }).join("") + "</ul></section>";
     html += '</div><aside class="r-side">';
@@ -811,7 +851,7 @@
       entries("links", "Links", function (at) {
         return field(at + ".label", "Label", { max: 40, ph: "LinkedIn" }) + field(at + ".url", "Address", { max: 300, type: "url", ph: "https://" });
       }, "Shown beside your location, like LinkedIn or a portfolio.") +
-      '<p class="rf-note rf-end">The Selected projects list on the page comes from the featured projects on the home page.</p></article>';
+      '<p class="rf-note rf-end">The Selected projects list on the page is your featured projects: change them from the home page in edit mode.</p></article>';
     if (keep) window.scrollTo(0, y);
     else { window.scrollTo(0, 0); main.focus({ preventScroll: true }); }
   }

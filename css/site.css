@@ -323,6 +323,15 @@ body.editing { padding-bottom: 88px; }
 .icon-btn svg, .btn.small svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .btn.small { padding: 8px 14px 8px 11px; font-size: 0.85rem; gap: 6px; }
 
+/* picking the featured projects, in edit mode */
+.fp { margin: 0 0 20px; padding: 18px 20px; border: 1.5px dotted var(--muted); border-radius: 16px; }
+.fp-note { color: var(--muted); font-size: 0.9rem; }
+.fp-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.fp-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 6px 6px 14px; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; }
+.fp-list b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.fp-add { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; font-size: 0.88rem; font-weight: 600; color: var(--ink-2); }
+.fp-add select { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font: 400 0.92rem/1.3 var(--sans); }
+
 /* printing the resume (and making resume.pdf): just the resume, on white */
 @media print {
   @page { size: letter; margin: 0.55in 0.6in; }

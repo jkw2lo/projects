@@ -9,7 +9,7 @@ A static site that reads each project's `overview/overview.json` (the same file 
 Everything is in `site.json`:
 
 - `headline`, `intro`: the top of the home page.
-- `featured`: repos shown large, in order, above the grid.
+- `featured`: repos shown large, in order, above the grid (up to 4; also the resume's Selected projects). In edit mode the home page has a panel to add, remove and reorder them.
 - `projects`: every repo on the site, in grid order, each with a `group` (one of `groups`, which become the filter buttons). Remove a line to hide a project.
 
 A project page lives at `#<slug>`, where the slug is the project's name in lowercase with dashes (`#writers-blocks`).
