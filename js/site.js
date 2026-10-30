@@ -6,14 +6,15 @@
    Pages (one HTML file, routed by the hash):
      ./                 home: intro, featured projects, every project with filters
      ./#recipe-book     a project, laid out from its overview
-     ./#resume          the resume, from resume.json, with resume.pdf to download
+     ./#resume          the resume, from resume.json, with resume.pdf to download (in edit
+                        mode, a form for adding to it)
      ./#stats           views, for the signed-in owner only
 
    The home page also has a timeline of when each project was built, from timeline.json
    (made from commit history by tools/timeline.mjs, which a workflow runs daily).
 
    Edit mode signs in to GitHub and makes the text editable in place; Save commits the
-   changes to site.json, resume.json or that project's overview.json. In a browser that
+   changes to site.json or that project's overview.json; the resume is a form instead. In a browser that
    has opened the stats page, the nav shows Views and Edit; visitors never see them.
 
    Views are counted quietly, once per visit, in Firestore's showcase_visits (the code
@@ -137,7 +138,9 @@
   function route() {
     var h = decodeURIComponent(location.hash.slice(1));
     if (h === "stats") return renderStats();
-    if (h === "resume" && resume) renderResume();
+    if (h === "resume" && editing) { startDraft(); if (resumeView === "preview") renderResume(tidy(draft)); else renderResumeForm(); }
+    else if (h === "resume" && resume) renderResume();
+    else if (h === "resume" && isMe()) renderNoResume();
     else if (bySlug[h]) renderProject(bySlug[h]);
     else renderHome(h);
     armEditor();
@@ -154,19 +157,25 @@
     return a;
   }
   function navLinks() {
-    if (resume) navLink("navResume", "Resume", "./#resume");
+    resumeLink();
     if (isMe()) ownerLinks();
+  }
+  // dotted, like the owner links, until there's a resume visitors can see
+  function resumeLink() {
+    if (!resume && !isMe()) return;
+    (document.getElementById("navResume") || navLink("navResume", "Resume", "./#resume")).className = resume ? "" : "owner";
+  }
+  function beginEdit() {
+    if (!editing) firebase().then(editSignIn, function () { sheet("Couldn’t load the sign-in library. Check the connection and try again."); });
   }
   // only in a browser that has opened the stats page
   function ownerLinks() {
     if (document.getElementById("navEdit")) return;
+    resumeLink();
     navLink("navViews", "Views", "./#stats", true).className = "owner first";
     navLink("navEdit", "Edit", "#", true).className = "owner";
     firebase().catch(function () {}); // loaded ahead, so the sign-in popups open straight from a click
-    document.getElementById("navEdit").addEventListener("click", function (e) {
-      e.preventDefault();
-      if (!editing) firebase().then(editSignIn, function () { sheet("Couldn’t load the sign-in library. Check the connection and try again."); });
-    });
+    document.getElementById("navEdit").addEventListener("click", function (e) { e.preventDefault(); beginEdit(); });
   }
 
   // ---------- home ----------
@@ -415,10 +424,10 @@
   function ed(repo, path) {
     if (!editing) return "";
     var leaf = path.split(".").filter(function (s) { return !/^\d+$/.test(s); }).pop();
-    var max = repo === "@resume" ? { summary: 700, points: 260, note: 200 }[leaf] || 120 : LIMITS[path] || LIMITS[leaf] || 200;
+    var max = LIMITS[path] || LIMITS[leaf] || 200;
     return ' data-edit="' + esc(repo + "|" + path) + '" data-max="' + max + '"';
   }
-  var source = function (key) { return key === "@site" ? site : key === "@resume" ? resume : byRepo[key] && byRepo[key].d; };
+  var source = function (key) { return key === "@site" ? site : byRepo[key] && byRepo[key].d; };
   var getPath = function (o, path) { return path.split(".").reduce(function (v, k) { return v == null ? v : v[k]; }, o); };
   function setPath(o, path, value) {
     var keys = path.split(".");
@@ -474,7 +483,7 @@
     if (editing && e.target.closest && e.target.closest("[data-edit]")) e.preventDefault();
   }, true);
   window.addEventListener("beforeunload", function (e) {
-    if (editing && Object.keys(pending).length) { e.preventDefault(); e.returnValue = ""; }
+    if (editing && (Object.keys(pending).length || draftChanged())) { e.preventDefault(); e.returnValue = ""; }
   });
 
   function showBar() {
@@ -491,11 +500,11 @@
         var b = e.target.closest("[data-eb]");
         if (!b) return;
         if (b.dataset.eb === "save") save();
-        if (b.dataset.eb === "discard") { pending = {}; note = ""; route(); }
+        if (b.dataset.eb === "discard") { pending = {}; draft = null; note = ""; route(); }
         if (b.dataset.eb === "done") {
-          var n = Object.keys(pending).length;
+          var n = changes();
           if (n && !confirm("Throw away " + n + (n === 1 ? " unsaved change?" : " unsaved changes?"))) return;
-          editing = false; ghToken = ""; pending = {}; note = "";
+          editing = false; ghToken = ""; pending = {}; draft = null; resumeView = "form"; note = "";
           bar.remove(); bar = null; document.body.classList.remove("editing");
           route();
         }
@@ -503,12 +512,16 @@
       document.body.appendChild(bar);
       document.body.classList.add("editing");
     }
-    var n = Object.keys(pending).length, overs = main.querySelectorAll("[data-edit].over"), over = overs.length;
+    var n = changes(), overs = main.querySelectorAll("[data-edit].over"), over = overs.length;
+    var unnamed = draftChanged() && !str(draft.name);
     bar.querySelector(".eb-msg").textContent = note ||
       (over ? "Too long for the layout: " + clean(overs[0]).length + " characters where " + overs[0].dataset.max + " fit" +
         (over > 1 ? " (and " + (over - 1) + " more in red)" : "") :
-        n ? n + (n === 1 ? " unsaved change" : " unsaved changes") : "Click any outlined text to change it");
-    bar.querySelector('[data-eb="save"]').disabled = !n || over > 0 || note === "Saving…";
+        unnamed ? "Add your name before saving the resume" :
+        n === 1 && draftChanged() ? "Unsaved changes to the resume" :
+        n ? n + (n === 1 ? " unsaved change" : " unsaved changes") :
+        location.hash === "#resume" ? "Fill in the form, then Save puts it live" : "Click any outlined text to change it");
+    bar.querySelector('[data-eb="save"]').disabled = !n || over > 0 || unnamed || note === "Saving…";
     bar.querySelector('[data-eb="discard"]').disabled = !n;
   }
 
@@ -536,7 +549,7 @@
   // file keeps its hand formatting; if a value can't be found exactly once, it's rewritten.
   function commit(key, changes) {
     var repo = key.charAt(0) === "@" ? SITE : key;
-    var files = key === "@site" ? ["site.json"] : key === "@resume" ? ["resume.json"] : ["overview/overview.json", "public/overview/overview.json"];
+    var files = key === "@site" ? ["site.json"] : ["overview/overview.json", "public/overview/overview.json"];
     var get = function (i) {
       return gh("repos/" + OWNER + "/" + repo + "/contents/" + files[i]).then(function (f) { return { path: files[i], f: f }; }, function (e) {
         if (e.status === 404 && i + 1 < files.length) return get(i + 1);
@@ -560,6 +573,7 @@
       });
     });
   }
+  var changes = function () { return Object.keys(pending).length + (draftChanged() ? 1 : 0); };
   function save() {
     var byRepoChanges = {};
     Object.keys(pending).forEach(function (k) { var s = splitKey(k); (byRepoChanges[s[0]] = byRepoChanges[s[0]] || {})[s[1]] = pending[k]; });
@@ -574,7 +588,10 @@
         });
       });
     }, Promise.resolve()).then(function () {
-      note = "Saved. The live site catches up in a minute or two."; route();
+      if (draftChanged()) return saveResume().then(function () { note = "Saved. The live site catches up in a minute or two, the PDF a few minutes after."; });
+      note = "Saved. The live site catches up in a minute or two.";
+    }).then(function () {
+      route();
     }, function (e) {
       note = "Couldn’t save: " + e.message; route();
     });
@@ -635,33 +652,31 @@
   // resume.json: name, title, location, summary, links[{label,url}],
   // experience[{role, org, where, start, end, points[]}], education[{school, degree, start, end, note}],
   // skills[{group, items[]}]. resume.pdf (made from this page by tools/resume-pdf.mjs) is the download.
-  function renderResume() {
-    var r = resume, R = "@resume";
+  function renderResume(r) {
+    r = r || resume;
     document.title = "Resume · " + brand();
     var when = function (x) { return esc([str(x.start, 20), str(x.end, 20)].filter(Boolean).join(" – ")); };
     var links = list(r.links, 6).map(function (l) { return { label: str(l && l.label, 40), url: safeUrl(str(l && l.url, 300), location.href) }; })
       .filter(function (l) { return l.label && l.url; });
     var html = '<article class="wrap resume">' +
+      (editing ? '<div class="rf-bar no-print"><span>Preview: what visitors see once you save.</span>' + viewToggle() + "</div>" : "") +
       '<header class="r-head"><div>' +
-        "<h1" + ed(R, "name") + ">" + esc(str(r.name, 60)) + "</h1>" +
-        (str(r.title) ? '<p class="r-title"' + ed(R, "title") + ">" + esc(str(r.title, 80)) + "</p>" : "") +
-        '<p class="r-contact">' + [str(r.location, 60) ? "<span" + ed(R, "location") + ">" + esc(str(r.location, 60)) + "</span>" : ""]
+        "<h1>" + esc(str(r.name, 60)) + "</h1>" +
+        (str(r.title) ? '<p class="r-title">' + esc(str(r.title, 80)) + "</p>" : "") +
+        '<p class="r-contact">' + [str(r.location, 60) ? "<span>" + esc(str(r.location, 60)) + "</span>" : ""]
           .concat(links.map(function (l) { return '<a href="' + esc(l.url) + '">' + esc(l.label) + "</a>"; })).filter(Boolean).join('<span class="dot">·</span>') + "</p>" +
       "</div>" +
       '<div class="r-actions no-print"><a class="btn solid" id="resumeDownload" href="resume.pdf" download="' + esc(slugify(str(r.name, 60) || "resume")) + '-resume.pdf">' +
         svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>') + "Download PDF</a></div></header>" +
-      (str(r.summary) ? '<p class="r-summary"' + ed(R, "summary") + ">" + esc(str(r.summary, 700)) + "</p>" : "") +
+      (str(r.summary) ? '<p class="r-summary">' + esc(str(r.summary, 700)) + "</p>" : "") +
       '<div class="r-cols"><div class="r-main">';
     var jobs = list(r.experience, 12);
     if (jobs.length) {
-      html += '<section class="r-sec"><h2>Experience</h2>' + jobs.map(function (j, i) {
-        var at = "experience." + i;
-        return '<div class="r-item"><div class="r-item-head"><h3><span' + ed(R, at + ".role") + ">" + esc(str(j.role, 80)) + "</span>" +
-            (str(j.org) ? ' <span class="r-org"' + ed(R, at + ".org") + ">" + esc(str(j.org, 80)) + "</span>" : "") + "</h3>" +
+      html += '<section class="r-sec"><h2>Experience</h2>' + jobs.map(function (j) {
+        return '<div class="r-item"><div class="r-item-head"><h3><span>' + esc(str(j.role, 80)) + "</span>" +
+            (str(j.org) ? ' <span class="r-org">' + esc(str(j.org, 80)) + "</span>" : "") + "</h3>" +
             '<span class="r-when">' + when(j) + (str(j.where) ? " · " + esc(str(j.where, 40)) : "") + "</span></div>" +
-          (list(j.points, 8).length ? "<ul>" + list(j.points, 8).map(function (pt, k) {
-            return "<li" + ed(R, at + ".points." + k) + ">" + esc(str(pt, 260)) + "</li>";
-          }).join("") + "</ul>" : "") + "</div>";
+          (list(j.points, 10).length ? "<ul>" + list(j.points, 10).map(function (pt) { return "<li>" + esc(str(pt, 260)) + "</li>"; }).join("") + "</ul>" : "") + "</div>";
       }).join("") + "</section>";
     }
     html += '<section class="r-sec no-print-break"><h2>Selected projects</h2><p class="r-note">Everything here was designed and built by me. ' +
@@ -672,26 +687,177 @@
     html += '</div><aside class="r-side">';
     var skills = list(r.skills, 8);
     if (skills.length) {
-      html += '<section class="r-sec"><h2>Skills</h2>' + skills.map(function (g, i) {
-        return '<div class="r-skill"><h3' + ed(R, "skills." + i + ".group") + ">" + esc(str(g.group, 40)) + "</h3><p>" +
-          list(g.items, 20).map(function (it, k) { return "<span" + ed(R, "skills." + i + ".items." + k) + ">" + esc(str(it, 40)) + "</span>"; }).join(", ") + "</p></div>";
+      html += '<section class="r-sec"><h2>Skills</h2>' + skills.map(function (g) {
+        return '<div class="r-skill"><h3>' + esc(str(g.group, 40)) + "</h3><p>" +
+          list(g.items, 20).map(function (it) { return esc(str(it, 40)); }).join(", ") + "</p></div>";
       }).join("") + "</section>";
     }
     var schools = list(r.education, 6);
     if (schools.length) {
-      html += '<section class="r-sec"><h2>Education</h2>' + schools.map(function (e, i) {
-        var at = "education." + i;
-        return '<div class="r-item"><h3' + ed(R, at + ".school") + ">" + esc(str(e.school, 80)) + "</h3>" +
-          (str(e.degree) ? "<p" + ed(R, at + ".degree") + ">" + esc(str(e.degree, 100)) + "</p>" : "") +
+      html += '<section class="r-sec"><h2>Education</h2>' + schools.map(function (e) {
+        return '<div class="r-item"><h3>' + esc(str(e.school, 80)) + "</h3>" +
+          (str(e.degree) ? "<p>" + esc(str(e.degree, 100)) + "</p>" : "") +
           '<span class="r-when">' + when(e) + "</span>" +
-          (str(e.note) ? '<p class="r-note"' + ed(R, at + ".note") + ">" + esc(str(e.note, 200)) + "</p>" : "") + "</div>";
+          (str(e.note) ? '<p class="r-note">' + esc(str(e.note, 200)) + "</p>" : "") + "</div>";
       }).join("") + "</section>";
     }
     main.innerHTML = html + "</aside></div></article>";
     document.getElementById("resumeDownload").addEventListener("click", function () { count(tagged("rd")); });
     window.scrollTo(0, 0);
     main.focus({ preventScroll: true });
-    count(tagged("rv"));
+    if (!editing) count(tagged("rv"));
+  }
+  // what you see at #resume before there's a resume (visitors don't get the link)
+  function renderNoResume() {
+    document.title = "Resume · " + brand();
+    main.innerHTML = '<section class="wrap stats"><a class="back" href="./">' + BACK + "Projects</a><h1>Resume</h1>" +
+      '<p class="lead">There’s no resume yet, so visitors don’t see the Resume link. Fill one in with a form; it goes live when you save.</p>' +
+      '<div class="p-actions" style="margin-top:20px"><button type="button" class="btn solid" id="startResume">Start the resume</button></div></section>';
+    document.getElementById("startResume").addEventListener("click", beginEdit);
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- the resume form (edit mode) ----------
+  // On #resume, edit mode shows a form instead of outlined text, so jobs, points, skills and
+  // schools can be added, removed and moved. It edits `draft`, a copy of resume.json, and
+  // Save writes the whole file (which also remakes resume.pdf).
+  var NEW = {
+    links: function () { return { label: "", url: "" }; },
+    experience: function () { return { role: "", org: "", where: "", start: "", end: "", points: [] }; },
+    skills: function () { return { group: "", items: [] }; },
+    education: function () { return { school: "", degree: "", start: "", end: "", note: "" }; }
+  };
+  var MAX = { links: 6, experience: 12, skills: 8, education: 6 };
+  var NOUN = { links: "link", experience: "job", skills: "skill group", education: "school" };
+  var draft = null, draftFrom = "", resumeView = "form";
+  var copy = function (o) { return JSON.parse(JSON.stringify(o)); };
+  function startDraft() {
+    if (draft) return;
+    draft = Object.assign({ name: "", title: "", location: "", links: [], summary: "", experience: [], skills: [], education: [] }, copy(resume || {}));
+    draftFrom = JSON.stringify(tidy(draft));
+  }
+  var draftChanged = function () { return !!draft && JSON.stringify(tidy(draft)) !== draftFrom; };
+  // what gets saved: trimmed, without blank points, skills or entries
+  function tidy(r) {
+    var t = copy(r), s = function (v) { return typeof v === "string" ? v.trim() : ""; };
+    var lines = function (a) { return (Array.isArray(a) ? a : []).map(s).filter(Boolean); };
+    var keep = function (o, keys) { keys.forEach(function (k) { o[k] = s(o[k]); }); return keys.some(function (k) { return o[k]; }); };
+    ["name", "title", "location", "summary"].forEach(function (k) { t[k] = s(t[k]); });
+    t.links = (t.links || []).filter(function (l) { return keep(l, ["label", "url"]); });
+    t.experience = (t.experience || []).filter(function (j) { j.points = lines(j.points); return keep(j, ["role", "org", "where", "start", "end"]) || j.points.length; });
+    t.skills = (t.skills || []).filter(function (g) { g.items = lines(g.items); return keep(g, ["group"]) || g.items.length; });
+    t.education = (t.education || []).filter(function (e) { return keep(e, ["school", "degree", "start", "end", "note"]); });
+    return t;
+  }
+  var viewToggle = function () {
+    return '<div class="seg" role="group" aria-label="Show">' + [["form", "Form"], ["preview", "Preview"]].map(function (v) {
+      return '<button type="button" data-view="' + v[0] + '" aria-pressed="' + (resumeView === v[0]) + '">' + v[1] + "</button>";
+    }).join("") + "</div>";
+  };
+  // a labelled input bound to a path in the draft; "lines" and "comma" fields hold a list
+  function field(path, label, o) {
+    o = o || {};
+    var v = getPath(draft, path), id = "rf-" + path.replace(/\./g, "-");
+    var val = o.as === "lines" ? list(v).join("\n") : o.as === "comma" ? list(v).join(", ") : v == null ? "" : v;
+    var attrs = ' id="' + id + '" data-f="' + esc(path) + '"' + (o.as ? ' data-as="' + o.as + '"' : "") +
+      (o.max ? ' maxlength="' + o.max + '"' : "") + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : "");
+    return '<label class="rf-field' + (o.size ? " " + o.size : "") + '" for="' + id + '"><span>' + esc(label) + (o.hint ? " <i>" + esc(o.hint) + "</i>" : "") + "</span>" +
+      (o.rows ? '<textarea rows="' + o.rows + '"' + attrs + ">" + esc(val) + "</textarea>" : '<input type="' + (o.type || "text") + '"' + attrs + ' value="' + esc(val) + '">') + "</label>";
+  }
+  function entryTitle(key, x) {
+    var t = key === "experience" ? [str(x.role), str(x.org)].filter(Boolean).join(" · ") : key === "links" ? str(x.label) : key === "skills" ? str(x.group) : str(x.school);
+    return t ? esc(t) : '<span class="blank">New ' + NOUN[key] + "</span>";
+  }
+  var ICON = {
+    up: svg('<path d="M12 19V5M6 11l6-6 6 6"/>'), down: svg('<path d="M12 5v14M6 13l6 6 6-6"/>'),
+    remove: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'), add: svg('<path d="M12 5v14M5 12h14"/>')
+  };
+  function entries(key, title, fields, note) {
+    var items = list(draft[key]);
+    var btn = function (act, i, label, off) {
+      return '<button type="button" class="icon-btn" data-act="' + act + '" data-list="' + key + '" data-i="' + i + '" aria-label="' + label + '" title="' + label + '"' + (off ? " disabled" : "") + ">" + ICON[act] + "</button>";
+    };
+    return '<section class="rf-sec"><div class="rf-sec-head"><div><h2>' + title + "</h2>" + (note ? '<p class="rf-note">' + note + "</p>" : "") + "</div>" +
+      (items.length < MAX[key] ? '<button type="button" class="btn small" data-act="add" data-list="' + key + '">' + ICON.add + "Add a " + NOUN[key] + "</button>" : "") + "</div>" +
+      (items.length ? items.map(function (x, i) {
+        return '<div class="rf-entry" data-entry="' + key + "." + i + '"><div class="rf-entry-head"><b>' + entryTitle(key, x) + '</b><span class="rf-moves">' +
+          btn("up", i, "Move up", i === 0) + btn("down", i, "Move down", i === items.length - 1) + btn("remove", i, "Remove this " + NOUN[key]) +
+          '</span></div><div class="rf-grid">' + fields(key + "." + i) + "</div></div>";
+      }).join("") : '<p class="rf-empty">None yet.</p>') + "</section>";
+  }
+  function renderResumeForm(keep) {
+    document.title = "Resume · " + brand();
+    var y = window.scrollY;
+    main.innerHTML = '<article class="wrap resume rf">' +
+      '<div class="rf-top"><div><h1>Your resume</h1><p>Changes stay here until you press Save. Empty boxes are left off the page.</p></div>' + viewToggle() + "</div>" +
+      '<section class="rf-sec"><div class="rf-sec-head"><h2>About you</h2></div><div class="rf-grid">' +
+        field("name", "Name", { max: 60 }) + field("title", "Title", { max: 80, ph: "Product designer" }) +
+        field("location", "Location", { max: 60, ph: "New York, NY", size: "wide" }) +
+        field("summary", "Summary", { max: 700, rows: 4, size: "wide", hint: "a few sentences at the top" }) + "</div></section>" +
+      entries("experience", "Experience", function (at) {
+        return field(at + ".role", "Role", { max: 80 }) + field(at + ".org", "Company", { max: 80 }) +
+          field(at + ".start", "Start", { max: 20, ph: "Mar 2022", size: "third" }) + field(at + ".end", "End", { max: 20, ph: "Present", size: "third" }) +
+          field(at + ".where", "Where", { max: 40, ph: "Remote", size: "third" }) +
+          field(at + ".points", "What you did", { rows: 4, as: "lines", size: "wide", hint: "one per line, up to 10" });
+      }, "Newest first. New jobs go at the top.") +
+      entries("skills", "Skills", function (at) {
+        return field(at + ".group", "Group", { max: 40, ph: "Design" }) + field(at + ".items", "Skills", { as: "comma", hint: "separated by commas", ph: "Figma, Prototyping" });
+      }) +
+      entries("education", "Education", function (at) {
+        return field(at + ".school", "School", { max: 80 }) + field(at + ".degree", "Degree", { max: 100 }) +
+          field(at + ".start", "Start", { max: 20, size: "third" }) + field(at + ".end", "End", { max: 20, size: "third" }) +
+          field(at + ".note", "Note", { max: 200, size: "third", ph: "Honors, focus…" });
+      }) +
+      entries("links", "Links", function (at) {
+        return field(at + ".label", "Label", { max: 40, ph: "LinkedIn" }) + field(at + ".url", "Address", { max: 300, type: "url", ph: "https://" });
+      }, "Shown beside your location, like LinkedIn or email (mailto:you@…).") +
+      '<p class="rf-note rf-end">The Selected projects list on the page comes from the featured projects on the home page.</p></article>';
+    if (keep) window.scrollTo(0, y);
+    else { window.scrollTo(0, 0); main.focus({ preventScroll: true }); }
+  }
+  main.addEventListener("input", function (e) {
+    var el = e.target.closest && e.target.closest("[data-f]");
+    if (!el || !draft) return;
+    var v = el.value;
+    setPath(draft, el.dataset.f, el.dataset.as === "lines" ? v.split("\n") : el.dataset.as === "comma" ? v.split(",") : v);
+    var entry = el.closest("[data-entry]");
+    if (entry) entry.querySelector(".rf-entry-head b").innerHTML = entryTitle(entry.dataset.entry.split(".")[0], getPath(draft, entry.dataset.entry));
+    note = "";
+    showBar();
+  });
+  main.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-act],[data-view]");
+    if (!b || !draft) return;
+    if (b.dataset.view) { resumeView = b.dataset.view; return route(); }
+    var key = b.dataset.list, a = draft[key] = list(draft[key]), i = +b.dataset.i, to = i, act = b.dataset.act;
+    if (act === "add") { to = key === "experience" || key === "education" ? 0 : a.length; a.splice(to, 0, NEW[key]()); }
+    if (act === "remove") {
+      var one = {}; one[key] = [a[i]];
+      if (tidy(one)[key].length && !confirm("Remove this " + NOUN[key] + "?")) return;
+      a.splice(i, 1);
+    }
+    if (act === "up" || act === "down") { to = act === "up" ? i - 1 : i + 1; a.splice(to, 0, a.splice(i, 1)[0]); }
+    renderResumeForm(true);
+    showBar();
+    var moved = main.querySelector('[data-entry="' + key + "." + to + '"]');
+    if (!moved) return;
+    if (act === "add") { moved.scrollIntoView({ block: "center" }); moved.querySelector("input,textarea").focus({ preventScroll: true }); }
+    else if (act !== "remove") {
+      var same = moved.querySelector('[data-act="' + act + '"]:not(:disabled)') || moved.querySelector("[data-act]:not(:disabled)");
+      moved.scrollIntoView({ block: "nearest" }); same.focus({ preventScroll: true });
+    }
+  });
+  // writes the whole file; the first save creates it
+  function saveResume() {
+    var r = tidy(draft), path = "repos/" + OWNER + "/" + SITE + "/contents/resume.json";
+    return gh(path).then(function (f) { return f.sha; }, function (e) { if (e.status === 404) return null; throw e; }).then(function (sha) {
+      return gh(path, { method: "PUT", body: JSON.stringify(Object.assign({
+        message: (sha ? "Update" : "Add") + " the resume from the portfolio", content: encode(JSON.stringify(r, null, 2) + "\n")
+      }, sha ? { sha: sha } : {})) });
+    }).then(function () {
+      resume = r; draftFrom = JSON.stringify(tidy(draft));
+      resumeLink();
+    });
   }
 
   // ---------- views, for you only ----------

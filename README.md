@@ -22,13 +22,13 @@ A project page's "Built Sep – Oct 2026" (or "Since …" while it's still being
 
 ## Editing the text
 
-Open `#stats` once in a browser and the nav there gains **Views** and **Edit** (visitors never see them). Press **Edit** on any page: a GitHub popup asks for repo access, then every piece of text on the site gets a dashed outline: click it and type. Pending changes stay as you move between pages; **Save** commits them, one commit per repo, to `site.json` or that project's `overview.json`, so the launchpad's About pages change too. Text that's too long for its spot turns red and blocks saving. The live site catches up a minute or two after saving.
+Open `#stats` once in a browser and the nav there gains **Views** and **Edit** (visitors never see them). Press **Edit** on any page: a GitHub popup asks for repo access, then every piece of text on the site gets a dashed outline: click it and type. Pending changes stay as you move between pages; **Save** commits them, one commit per repo, to `site.json` or that project's `overview.json` (the resume has its own form, below), so the launchpad's About pages change too. Text that's too long for its spot turns red and blocks saving. The live site catches up a minute or two after saving.
 
 The access lives only in that tab: reload, or press **Done**, and you're out of edit mode. On a local copy, `?edit-preview` shows edit mode without signing in (Save won't work there).
 
 ## Resume
 
-`resume.json` becomes the `#resume` page, and a Resume link appears in the nav once the file exists:
+`resume.json` becomes the `#resume` page. Fill it in with a form: press **Edit**, open **Resume** (dotted in your nav until a resume exists; visitors don't see the link until then), and add, remove or reorder jobs, points, skills, schools and links. **Preview** shows the page as visitors will see it, and **Save** writes the whole file (the first save creates it). Empty boxes are left out. The file looks like this:
 
 ```json
 {
@@ -41,7 +41,7 @@ The access lives only in that tab: reload, or press **Done**, and you're out of 
 }
 ```
 
-The **Download PDF** button serves `resume.pdf`, which is the same page printed: the Resume PDF workflow remakes it whenever `resume.json` or the site's code changes (or locally: `node tools/resume-pdf.mjs`). Text edits made in edit mode land in `resume.json` too, so the PDF follows.
+The **Download PDF** button serves `resume.pdf`, which is the same page printed: the Resume PDF workflow remakes it whenever `resume.json` or the site's code changes (or locally: `node tools/resume-pdf.mjs`), so a save from the form updates the PDF a few minutes later.
 
 ## Views
 
