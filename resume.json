@@ -1,0 +1,144 @@
+{
+  "name": "Jennifer Lo",
+  "title": "Applied AI and analytics leader",
+  "location": "",
+  "links": [
+    {
+      "label": "LinkedIn",
+      "url": "https://linkedin.com/in/jenniferkwlo"
+    }
+  ],
+  "summary": "Applied AI and analytics leader with 7+ years of experience leading global enterprise AI adoption, analytics modernization, and automation. Experienced in identifying high-value AI opportunities, governing enterprise platforms, and delivering solutions that improve operational efficiency and decision-making.",
+  "experience": [
+    {
+      "role": "AI Manager and Product Owner",
+      "org": "Brookfield – Technology Services",
+      "where": "New York, United States",
+      "start": "Nov 2024",
+      "end": "Dec 2025",
+      "points": [
+        "Established and executed enterprise-wide adoption and governance of AI tools, managing admin, user onboarding, training, billing, governance, troubleshooting and consultation",
+        "ChatGPT: led the enterprise rollout to 1,000+ users from Apr to Sep 2025, with ongoing enablement programs and support processes accelerating responsible enterprise AI adoption",
+        "ToltIQ: enabled 600+ investments and private equity users to increase due diligence efficiency from Feb 2025, with onboarding, training, prompt writing, a prompt library, knowledge sharing and feature request sessions",
+        "Amazon Q Business: enabled 100+ users across HR, audit, finance and tax from Nov 2024, setting up team environments and RAG data sources, building Q apps like a resume match analysis and audit report editor, and working with Amazon engineers on features",
+        "Scribe: enabled 100+ users on a modernized documentation and sharing tool from Dec 2024",
+        "Led 100+ technical and educational demos, establishing and presenting best practices and prompt engineering to raise AI literacy and adoption across business groups and levels of staff",
+        "Participated in and contributed to organization-wide, local and global AI-VCO objectives and initiatives, providing and collating quarterly updates, use case and progress tracking",
+        "Partnered with Amazon and PwC on AI solutions for corporate functions: agentic HR invoice redaction and processing, a PowerApp pre-meeting report generator using Salesforce and Preqin data, and a due diligence questionnaire assistant",
+        "Drove organization-wide AI value creation by prioritizing use cases, requirements gathering and documentation, delivering proofs of concept, and assessing viability and business alignment",
+        "Snowflake x AWS hackathon: developed a Streamlit app with Cortex Analyst on multimodal real estate data, an industry-specific, UI/UX-minded research tool"
+      ]
+    },
+    {
+      "role": "RPA Developer",
+      "org": "Brookfield – Technology Services",
+      "where": "New York, United States",
+      "start": "Aug 2024",
+      "end": "Nov 2024",
+      "points": [
+        "Deployed automations with UiPath to reduce manual processes and increase accuracy",
+        "Updated the existing legal document ingestion automation for two new document formats",
+        "Automated the quarterly rollover of financial statement trackers",
+        "Troubleshot and resolved ad-hoc production automation failures",
+        "Refactored and maintained data remediation Python code for Relito"
+      ]
+    },
+    {
+      "role": "Data Analytics and Visualization Manager",
+      "org": "Brookfield – Internal Audit",
+      "where": "New York and Sydney",
+      "start": "Nov 2022",
+      "end": "Jul 2024",
+      "points": [
+        "Modernized audit analytics through Alteryx migrations and redesigned Tableau dashboards, enabling scalable self-service compliance reporting and executive insights"
+      ]
+    },
+    {
+      "role": "Data Analytics and Visualization Manager / Senior Analyst / Analyst",
+      "org": "Brookfield – Internal Audit",
+      "where": "Toronto, Canada",
+      "start": "Sep 2018",
+      "end": "Nov 2022",
+      "points": [
+        "Led and delivered enterprise audit analytics and compliance monitoring while driving automation and modernization using Alteryx, Tableau, VBA, and ACL"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "group": "AI Platforms",
+      "items": [
+        "ChatGPT Enterprise",
+        "Amazon Q Business",
+        "ToltIQ",
+        "Copilot Studio",
+        "PowerApps",
+        "Gemini",
+        "Claude"
+      ]
+    },
+    {
+      "group": "AI Concepts",
+      "items": [
+        "Prompt Engineering",
+        "Retrieval Augmented Generation (RAG)",
+        "Agentic AI",
+        "AI Assisted Development & Prototyping",
+        "AI Governance",
+        "Adoption & Best Practices"
+      ]
+    },
+    {
+      "group": "Automations",
+      "items": [
+        "UiPath",
+        "Alteryx"
+      ]
+    },
+    {
+      "group": "Data Analytics & Visualization",
+      "items": [
+        "Alteryx",
+        "Snowflake",
+        "Tableau",
+        "Power BI",
+        "Python",
+        "SQL",
+        "VBA",
+        "ACL"
+      ]
+    },
+    {
+      "group": "Certificates",
+      "items": [
+        "OpenAI Applied AI Foundations",
+        "OpenAI Agents & Workflows",
+        "Claude 101",
+        "Claude Code 101"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "school": "University of Waterloo, Canada",
+      "degree": "Bachelor of Computing and Financial Management",
+      "start": "Sep 2013",
+      "end": "Apr 2018",
+      "note": "Computer Science and Finance double major"
+    },
+    {
+      "school": "Schola Academy, Italy",
+      "degree": "Leatherwork and Bag Design",
+      "start": "Jul 2024",
+      "end": "",
+      "note": ""
+    },
+    {
+      "school": "Debloo Studio, Thailand",
+      "degree": "Bag Design and Luxury Finishes",
+      "start": "Jan 2026",
+      "end": "",
+      "note": ""
+    }
+  ]
+}

@@ -810,7 +810,7 @@
       }) +
       entries("links", "Links", function (at) {
         return field(at + ".label", "Label", { max: 40, ph: "LinkedIn" }) + field(at + ".url", "Address", { max: 300, type: "url", ph: "https://" });
-      }, "Shown beside your location, like LinkedIn or email (mailto:you@…).") +
+      }, "Shown beside your location, like LinkedIn or a portfolio.") +
       '<p class="rf-note rf-end">The Selected projects list on the page comes from the featured projects on the home page.</p></article>';
     if (keep) window.scrollTo(0, y);
     else { window.scrollTo(0, 0); main.focus({ preventScroll: true }); }
