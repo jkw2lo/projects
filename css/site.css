@@ -326,6 +326,7 @@ body.editing { padding-bottom: 88px; }
   .r-item { margin-bottom: 12px; }
   .r-item-head, .r-sec h2 { break-after: avoid; }
   .r-item li, .r-skill, .r-side .r-item { break-inside: avoid; }
+  .no-print-break { break-inside: avoid; }
   .r-projects a { padding: 6px 10px; }
   a { color: inherit; }
 }

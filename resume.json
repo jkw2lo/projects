@@ -8,7 +8,7 @@
       "url": "https://linkedin.com/in/jenniferkwlo"
     }
   ],
-  "summary": "Applied AI and analytics leader with 7+ years of experience leading global enterprise AI adoption, analytics modernization, and automation. Experienced in identifying high-value AI opportunities, governing enterprise platforms, and delivering solutions that improve operational efficiency and decision-making.",
+  "summary": "Applied AI and analytics leader with 7+ years of experience leading global enterprise AI adoption, analytics modernization, and automation. Experienced in identifying high-value AI opportunities, governing enterprise platforms, and delivering solutions that improve operational efficiency and decision-making. A creative, adaptable and detail-oriented problem solver who enjoys learning, exploring new technologies, and communicating ideas.",
   "experience": [
     {
       "role": "AI Manager and Product Owner",
@@ -18,15 +18,15 @@
       "end": "Dec 2025",
       "points": [
         "Established and executed enterprise-wide adoption and governance of AI tools, managing admin, user onboarding, training, billing, governance, troubleshooting and consultation",
-        "ChatGPT: led the enterprise rollout to 1,000+ users from Apr to Sep 2025, with ongoing enablement programs and support processes accelerating responsible enterprise AI adoption",
-        "ToltIQ: enabled 600+ investments and private equity users to increase due diligence efficiency from Feb 2025, with onboarding, training, prompt writing, a prompt library, knowledge sharing and feature request sessions",
-        "Amazon Q Business: enabled 100+ users across HR, audit, finance and tax from Nov 2024, setting up team environments and RAG data sources, building Q apps like a resume match analysis and audit report editor, and working with Amazon engineers on features",
+        "ChatGPT: led the enterprise rollout to 1,000+ users from Apr to Sep 2025, from rollout planning and options for executives to custom GPTs and connectors, with ongoing enablement and support for responsible AI adoption",
+        "ToltIQ (formerly DiligentIQ): enabled 600+ investments and private equity users to speed up due diligence from Feb 2025 through onboarding, training, prompt consultation, a prompt library, knowledge sharing and adoption work with team leads",
+        "Amazon Q Business: enabled 100+ users across HR, audit, finance and tax from Nov 2024, set up team environments and RAG data sources, built Q apps for maternity leave payroll, resume matching and audit report editing, and shaped features with Amazon engineers",
         "Scribe: enabled 100+ users on a modernized documentation and sharing tool from Dec 2024",
         "Led 100+ technical and educational demos, establishing and presenting best practices and prompt engineering to raise AI literacy and adoption across business groups and levels of staff",
         "Participated in and contributed to organization-wide, local and global AI-VCO objectives and initiatives, providing and collating quarterly updates, use case and progress tracking",
-        "Partnered with Amazon and PwC on AI solutions for corporate functions: agentic HR invoice redaction and processing, a PowerApp pre-meeting report generator using Salesforce and Preqin data, and a due diligence questionnaire assistant",
-        "Drove organization-wide AI value creation by prioritizing use cases, requirements gathering and documentation, delivering proofs of concept, and assessing viability and business alignment",
-        "Snowflake x AWS hackathon: developed a Streamlit app with Cortex Analyst on multimodal real estate data, an industry-specific, UI/UX-minded research tool"
+        "Partnered with Amazon and PwC on AI solutions for corporate functions: agentic invoice redaction for HR accounts payable, a PowerApp pre-meeting report generator using Salesforce and Preqin data, and AI-extracted questionnaire responses for compliance",
+        "Drove organization-wide AI value creation by collecting and prioritizing use cases, gathering requirements with leads, delivering proofs of concept, and assessing viability and alignment with business strategy",
+        "Snowflake x AWS hackathon: built a Streamlit app and retrieval agent on Cortex Analyst and AWS Bedrock, letting underwriters query structured and unstructured real estate investment data in natural language"
       ]
     },
     {
@@ -36,10 +36,11 @@
       "start": "Aug 2024",
       "end": "Nov 2024",
       "points": [
-        "Deployed automations with UiPath to reduce manual processes and increase accuracy",
+        "Deployed automations with UiPath to reduce manual processes and increase accuracy in document processing and quarterly reporting",
         "Updated the existing legal document ingestion automation for two new document formats",
         "Automated the quarterly rollover of financial statement trackers",
         "Troubleshot and resolved ad-hoc production automation failures",
+        "Authored runbooks and documentation for knowledge transfer and compliance",
         "Refactored and maintained data remediation Python code for Relito"
       ]
     },
@@ -50,7 +51,9 @@
       "start": "Nov 2022",
       "end": "Jul 2024",
       "points": [
-        "Modernized audit analytics through Alteryx migrations and redesigned Tableau dashboards, enabling scalable self-service compliance reporting and executive insights"
+        "Migrated legacy audit processes to Alteryx, enabling up-to-date, metric-based, scalable self-service compliance reporting",
+        "Redesigned Tableau dashboards for APAC T&E and accounts payable, giving C-suite reviews visibility into compliance trends and risks",
+        "Delivered analytics with Alteryx, Tableau and Power BI to support real estate audits and executive reporting"
       ]
     },
     {
@@ -60,7 +63,8 @@
       "start": "Sep 2018",
       "end": "Nov 2022",
       "points": [
-        "Led and delivered enterprise audit analytics and compliance monitoring while driving automation and modernization using Alteryx, Tableau, VBA, and ACL"
+        "Led and delivered enterprise audit analytics with Alteryx, Tableau, VBA and ACL: compliance monitoring, anti-bribery and corruption reviews, journal entry reconciliations, and routine and ad-hoc audit insights",
+        "Drove modernization of analytics functions, enabling adoption of new methodologies, automations and tools across internal audit teams"
       ]
     }
   ],
@@ -73,8 +77,11 @@
         "ToltIQ",
         "Copilot Studio",
         "PowerApps",
-        "Gemini",
-        "Claude"
+        "Claude",
+        "Claude Code",
+        "Codex",
+        "n8n",
+        "Gemini"
       ]
     },
     {
