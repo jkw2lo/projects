@@ -185,6 +185,18 @@ main:focus { outline: none; }
 .stats td.n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
 .stats h2 { margin-top: 40px; font: 500 1.4rem/1.2 var(--serif); }
 .stats code { padding: 1px 6px; border-radius: 6px; background: var(--line-2); font-size: 0.85em; }
+.stats th.n { text-align: right; }
+.stats .zero { color: var(--muted); }
+.table-scroll { overflow-x: auto; }
+.linkmaker { margin-top: 28px; padding: 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; }
+.linkmaker h2 { margin: 0; }
+.linkmaker .lead { margin: 6px 0 16px; font-size: 0.95rem; }
+.linkmaker .rf-field { max-width: 360px; }
+.lm-tag { margin: 16px 0 8px; color: var(--muted); font-size: 0.88rem; }
+.lm-tag b { color: var(--ink); }
+.lm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 0; border-top: 1px solid var(--line-2); }
+.lm-label { width: 90px; font-size: 0.88rem; font-weight: 600; color: var(--ink-2); }
+.lm-row code { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; padding: 6px 10px !important; font-size: 0.85rem !important; }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .feature, .card { transition: none; } }
 

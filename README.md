@@ -49,7 +49,7 @@ Visits are counted in Firestore `showcase_visits` (project github-projects-5d4e4
 
 The resume counts `rv` (viewed) and `rd` (downloaded), with `-<tag>` for a tagged link.
 
-See the numbers at `#stats` (sign in with the launchpad account). Opening `#stats` also marks that browser as yours, so your own visits aren't counted.
+See the numbers at `#stats` (sign in with the launchpad account): one row per tag with its visits, resume views and downloads. **Make a link to send** at the top of that page turns a company name into the tag and gives a link to the home page and one straight to the resume, ready to copy. Opening `#stats` also marks that browser as yours, so your own visits aren't counted.
 
 ## Share image
 

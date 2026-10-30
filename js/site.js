@@ -883,15 +883,59 @@
     return days < 1 ? "today " + dt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
       : days < 2 ? "yesterday" : dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
+  // one row per tagged link (and one for untagged visits): home page visits, resume views, downloads
+  function sources(by) {
+    var keys = Object.keys(by).sort(function (a, b) { return !a ? 1 : !b ? -1 : by[b].last - by[a].last; });
+    if (!keys.length) return '<p class="lead" style="margin-top:12px">None yet.</p>';
+    var num = function (n) { return '<td class="n">' + (n || '<span class="zero">–</span>') + "</td>"; };
+    return '<div class="table-scroll"><table><thead><tr><th>Link</th><th class="n">Visits</th>' + (resume ? '<th class="n">Resume</th><th class="n">Downloaded</th>' : "") +
+      "<th>Last</th></tr></thead><tbody>" + keys.map(function (t) {
+        var r = by[t];
+        return "<tr><td>" + (t ? "<b>" + esc(t) + "</b>" : "Direct, no tag") + "</td>" + num(r.pf) + (resume ? num(r.rv) + num(r.rd) : "") + "<td>" + when(r.last) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  // makes ?for=<tag> links to send; nothing is stored, the tag shows up above once the link is opened
+  // up to 16 characters, cut at a whole word
+  function linkTag(s) {
+    var t = slugify(String(s || ""));
+    if (t.length <= 16) return t;
+    t = t.slice(0, 17);
+    return t.lastIndexOf("-") > 0 ? t.slice(0, t.lastIndexOf("-")) : t.slice(0, 16);
+  }
+  function linkMaker() {
+    return '<section class="linkmaker"><h2>Make a link to send</h2><p class="lead">Each company gets its own link, so you can see who opened it and whether they looked at your resume.</p>' +
+      '<label class="rf-field" for="lmName"><span>Company or person</span><input id="lmName" placeholder="Acme" maxlength="40" autocomplete="off"></label>' +
+      '<div id="lmOut"></div></section>';
+  }
+  function armLinkMaker() {
+    var input = document.getElementById("lmName"), out = document.getElementById("lmOut");
+    var draw = function () {
+      var t = linkTag(input.value);
+      if (!t) { out.innerHTML = ""; return; }
+      var links = [["Home page", HOME + "?for=" + t]].concat(resume ? [["Resume", HOME + "?for=" + t + "#resume"]] : []);
+      out.innerHTML = '<p class="lm-tag">Tag <b>' + esc(t) + "</b></p>" + links.map(function (l) {
+        return '<div class="lm-row"><span class="lm-label">' + l[0] + '</span><code>' + esc(l[1]) + '</code><button type="button" class="btn small" data-copy="' + esc(l[1]) + '">Copy</button></div>';
+      }).join("");
+    };
+    input.addEventListener("input", draw);
+    out.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-copy]");
+      if (!b) return;
+      var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600); };
+      if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.copy).then(done, function () { prompt("Copy this link:", b.dataset.copy); });
+      else prompt("Copy this link:", b.dataset.copy);
+    });
+  }
   function renderStats() {
     document.title = "Views · " + brand();
     try { localStorage.setItem(ME, "1"); } catch (e) {}
     if (isMe()) ownerLinks();
     main.innerHTML = '<section class="wrap stats"><a class="back" href="./">' + BACK + "Projects</a>" +
       "<h1>Views</h1><p class=\"lead\">Only you can see these. This browser's own visits aren't counted.</p>" +
-
+      linkMaker() +
       '<div id="statsBody"><p class="loading">Checking you’re signed in…</p></div></section>';
     var body = function (h) { var el = document.getElementById("statsBody"); if (el) el.innerHTML = h; };
+    armLinkMaker();
     firebase().then(function (fb) {
       var google = function () {
         fb.auth().signInWithPopup(new fb.auth.GoogleAuthProvider()).catch(function (e) { body('<p class="lead">' + esc(e.message) + "</p>"); });
@@ -904,32 +948,30 @@
           return;
         }
         fb.firestore().collection("showcase_visits").orderBy("at", "desc").limit(5000).get().then(function (snap) {
-          var home = {}, proj = {}, cv = {}, total = 0, month = 0, cutoff = Date.now() - 30 * 864e5;
+          var home = {}, proj = {}, by = {}, total = 0, month = 0, cutoff = Date.now() - 30 * 864e5;
+          var tally = function (t, col, at) {
+            var r = by[t] || (by[t] = { pf: 0, rv: 0, rd: 0, last: 0 }); r[col]++; if (at > r.last) r.last = at;
+          };
           var add = function (m, key, at) { var r = m[key] || (m[key] = { n: 0, last: 0 }); r.n++; if (at > r.last) r.last = at; };
           snap.docs.forEach(function (doc) {
             var v = doc.data(), k = String(v.k || ""), at = v.at && v.at.toMillis ? v.at.toMillis() : 0;
-            if (k === "pf" || k.indexOf("pf-") === 0) { add(home, k === "pf" ? "" : k.slice(3), at); total++; if (at > cutoff) month++; }
+            if (k === "pf" || k.indexOf("pf-") === 0) { add(home, k.slice(3), at); tally(k.slice(3), "pf", at); total++; if (at > cutoff) month++; }
             else if (k.indexOf("pp-") === 0) add(proj, k.slice(3), at);
-            else if (/^r[vd](-|$)/.test(k)) add(cv, k.slice(0, 2) + "|" + k.slice(3), at);
+            else if (/^r[vd](-|$)/.test(k)) tally(k.slice(3), k.slice(0, 2), at);
           });
           var rows = function (m, label) {
             var keys = Object.keys(m).sort(function (a, b) { return m[b].n - m[a].n; });
             return keys.length ? "<table><thead><tr><th>" + label + '</th><th style="text-align:right">Views</th><th>Last</th></tr></thead><tbody>' +
               keys.map(function (key) {
-                var name = label === "Project" ? (bySlug[key] ? bySlug[key].name : key)
-                  : label === "Resume" ? (key.slice(0, 2) === "rd" ? "Downloaded" : "Viewed") + (key.slice(3) ? ", for=" + key.slice(3) : "")
-                  : (key ? "for=" + key : "Direct, no tag");
+                var name = bySlug[key] ? bySlug[key].name : key;
                 return "<tr><td>" + esc(name) + '</td><td class="n">' + m[key].n + "</td><td>" + when(m[key].last) + "</td></tr>";
               }).join("") + "</tbody></table>" : '<p class="lead" style="margin-top:12px">None yet.</p>';
           };
           body('<div class="stat-row"><div><b>' + total + "</b><span>visits to the home page</span></div>" +
             "<div><b>" + month + "</b><span>in the last 30 days</span></div>" +
-            "<div><b>" + Object.keys(home).filter(Boolean).length + "</b><span>tagged links opened</span></div></div>" +
-            "<h2>Who it came from</h2>" + rows(home, "Link") +
-            "<h2>Project pages</h2>" + rows(proj, "Project") +
-            (resume ? "<h2>Resume</h2>" + rows(cv, "Resume") : "") +
-            '<p class="lead" style="margin-top:28px">Tag a link to see where views come from: <code>' +
-            esc(location.origin + location.pathname) + "?for=acme</code>. A tag is lowercase letters, numbers and dashes.</p>");
+            "<div><b>" + Object.keys(by).filter(Boolean).length + "</b><span>tagged links opened</span></div></div>" +
+            "<h2>Who it came from</h2>" + sources(by) +
+            "<h2>Project pages</h2>" + rows(proj, "Project"));
         }, function (e) {
           var who = user.email || user.displayName || "another account";
           var via = (user.providerData[0] || {}).providerId === "github.com" ? " (through GitHub)" : "";
