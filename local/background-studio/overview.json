@@ -1,0 +1,82 @@
+{
+  "version": 3,
+  "name": "Background Studio",
+  "tagline": "Cut-outs from scans, in bulk",
+  "pitch": "Removes backgrounds from hundreds of scans and photos at once, offline, without tearing tickets or stamps apart.",
+  "accent": "#4f46e5",
+  "status": "In progress",
+  "problem": "AI cut-out tools tear printed tickets and stamps apart.",
+  "stats": [
+    {
+      "value": "0",
+      "label": "network connections once it's set up"
+    },
+    {
+      "value": "36",
+      "label": "categories, each on its own key"
+    },
+    {
+      "value": "6",
+      "label": "image formats, iPhone HEIC included"
+    }
+  ],
+  "features": [
+    {
+      "title": "Fine-tune any image",
+      "text": "Compare before and after, then fix edges, straighten, crop or touch up.",
+      "details": [
+        "Brushes to keep or erase by hand",
+        "Copy one image's settings onto the next",
+        "Save and go to the next, through a whole folder"
+      ],
+      "screen": {
+        "src": "editor.png",
+        "alt": "The editor on a theatre ticket: the scan on the left of a slider, the cut-out on a checkerboard on the right, and Method, Edges and Straighten controls beside it"
+      }
+    },
+    {
+      "title": "Sort and tag",
+      "text": "File pictures into your own categories, one key press each.",
+      "details": [
+        "Suggests a category and learns from every tag",
+        "Then copy into folders, Finder tags or a spreadsheet",
+        "Compare and merge folders, too"
+      ],
+      "screen": {
+        "src": "sort.png",
+        "alt": "Sorting a Vespa sticker: categories Tickets, Stamps, Stickers, Postcards and Souvenirs on the right with their keys, and a suggestion that reads Looks like Stickers, 92%"
+      }
+    },
+    {
+      "title": "Made for scans",
+      "text": "Auto-detect picks a method per scan: cut-out, ink only, or keep as is.",
+      "details": [
+        "Fills a ticket's outline so nothing printed is lost",
+        "Keeps a stamp's ink and drops the paper",
+        "Leaves a postcard that fills the scan alone"
+      ]
+    },
+    {
+      "title": "Private by design",
+      "text": "Open-source models run on your Mac; your images never leave it.",
+      "details": [
+        "Originals are only read, never changed",
+        "Reruns skip what's already done",
+        "Results can go straight to Photobook Studio's Shelf"
+      ]
+    }
+  ],
+  "screens": [
+    {
+      "src": "desktop.png",
+      "alt": "Background Studio's results: eight scans cut out on a checkerboard, from stamps and stickers to two tickets, with the postcard kept as is",
+      "caption": "Eight scans of trip keepsakes, done in ten seconds"
+    }
+  ],
+  "facts": {
+    "worksOn": "Mac, offline",
+    "data": "On your Mac, never uploaded",
+    "builtWith": "Python, Flask and rembg",
+    "started": "Oct 2026"
+  }
+}

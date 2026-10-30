@@ -37,6 +37,7 @@
     { "repo": "ring-shortlist", "group": "home" },
     { "repo": "off-script", "group": "home" },
     { "repo": "magpie", "group": "home", "local": "A Chrome extension, not in the Web Store yet" },
-    { "repo": "photobook-studio", "group": "making", "local": "A Mac app, not published yet" }
+    { "repo": "photobook-studio", "group": "making", "local": "A Mac app, not published yet" },
+    { "repo": "background-studio", "group": "making", "local": "A Mac app, not published yet" }
   ]
 }

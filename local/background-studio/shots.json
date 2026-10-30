@@ -1,0 +1,47 @@
+{
+  "url": "http://127.0.0.1:8865/",
+  "note": "Background Studio runs on the Mac. Shot from a second copy started like start.sh with BGSTUDIO_DATA pointed at a scratch folder, --port 8865 --no-browser, its output set to a scratch folder, and eight made-up scans of trip keepsakes (tickets, stamps, stickers, a postcard, a cup). Sort & tag was set up with five categories and five pictures tagged. Scratch paths are shown as the defaults.",
+  "shots": [
+    {
+      "file": "desktop.png",
+      "settle": 3000,
+      "steps": [
+        "wait:2000",
+        "eval:[...document.querySelectorAll('p')].filter(p => /Saved to/.test(p.textContent)).forEach(p => p.textContent = p.textContent.replace(/Saved to .*/, 'Saved to ~/Pictures/Background Studio Output'))",
+        "wait:300"
+      ]
+    },
+    {
+      "file": "editor.png",
+      "settle": 3000,
+      "steps": [
+        "wait:2000",
+        "eval:[...document.querySelectorAll('.card')].find(c => c.textContent.includes('ticket-teatro')).querySelector('.thumb').click()",
+        "wait:3500"
+      ],
+      "region": [
+        60,
+        27,
+        1320,
+        785
+      ]
+    },
+    {
+      "file": "sort.png",
+      "url": "http://127.0.0.1:8865/tag",
+      "settle": 3000,
+      "steps": [
+        "wait:1500",
+        "eval:localStorage.setItem('bgs-tag-step', '3'); localStorage.setItem('bgs-tag-round', 'r1'); localStorage.setItem('bgs-zoom-hint', 'seen')",
+        "reload",
+        "wait:5000"
+      ],
+      "region": [
+        0,
+        57,
+        1440,
+        785
+      ]
+    }
+  ]
+}
