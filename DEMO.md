@@ -15,8 +15,9 @@ All four come from one file, `tools/demo-welcome.js` in this repo (the master). 
 a copy and supplies only what's its own: the words, the sample, how to clear it, and the
 steps. Look and behaviour live in the file, never in an app.
 
-Done so far: **Nihongo Quest** and **Writers Blocks** (all four), **Trip Board** (choice, demo
-and walk-through; its sample marks itself, so no banner).
+Done so far: **Nihongo Quest**, **Hanzi Quest**, **Cantonese Quest** and **Writers Blocks** (all
+four); **Trip Board** and **UI Field Guide** (choice, demo and walk-through; their samples mark
+themselves, so no banner).
 
 ## When it shows
 
@@ -160,3 +161,7 @@ The same as the overviews (`jens_launchpad/OVERVIEW.md`):
   set aside for the demo only, eight steps across its stages and views.
 - **Trip Board** (end of the main script in `Trip Board.html`): its own sample trip, no banner
   because the sample marks itself, and eight steps across the calendar, Discover and Coverage.
+- **Hanzi Quest** and **Cantonese Quest** (`js/demo.js`): the learner from each app's
+  `overview/shots.json`, wrapped in a function, and seven steps that follow its overview.
+- **UI Field Guide** (last script in `index.html`): an app that's never empty. The demo loads
+  nothing and clears nothing; it's the walk round the library and the example mockup.
