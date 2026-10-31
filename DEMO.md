@@ -15,9 +15,8 @@ All four come from one file, `tools/demo-welcome.js` in this repo (the master). 
 a copy and supplies only what's its own: the words, the sample, how to clear it, and the
 steps. Look and behaviour live in the file, never in an app.
 
-Done so far: **Nihongo Quest** (choice, demo, walk-through, banner), **Writers Blocks** (all
-four), **Trip Board** (choice and demo; its sample marks itself, so no banner; no
-walk-through yet).
+Done so far: **Nihongo Quest** and **Writers Blocks** (all four), **Trip Board** (choice, demo
+and walk-through; its sample marks itself, so no banner).
 
 ## When it shows
 
@@ -142,7 +141,9 @@ The same as the overviews (`jens_launchpad/OVERVIEW.md`):
      parameter
    - *See the demo*: the demo loads, nothing is locked, no setup or first-run tour appears
    - every step, at desktop and phone width, in light and dark: the right part lights up, the
-     card doesn't cover it, the text is true
+     card doesn't cover it, the text is true. On a phone, check pages that are wider than the
+     screen too (Trip Board's tabs): the file places everything against what's on screen, not
+     the page, so the overlay, card and banner should still sit inside it
    - the banner after the tour; *Start fresh* from it leaves a new user
    - *Start fresh* from the overlay, and Esc, leave the app untouched
    - a direct visit (no parameter) and a visitor with their own data: no overlay
@@ -157,5 +158,5 @@ The same as the overviews (`jens_launchpad/OVERVIEW.md`):
   the navigation step.
 - **Writers Blocks** (top of `js/app.js`): an in-memory sample, the app's own first-run tour
   set aside for the demo only, eight steps across its stages and views.
-- **Trip Board** (end of the main script in `Trip Board.html`): the smallest. Its own sample
-  trip, no banner because the sample marks itself.
+- **Trip Board** (end of the main script in `Trip Board.html`): its own sample trip, no banner
+  because the sample marks itself, and eight steps across the calendar, Discover and Coverage.
