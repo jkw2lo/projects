@@ -15,9 +15,9 @@ All four come from one file, `tools/demo-welcome.js` in this repo (the master). 
 a copy and supplies only what's its own: the words, the sample, how to clear it, and the
 steps. Look and behaviour live in the file, never in an app.
 
-Done so far: **Nihongo Quest**, **Hanzi Quest**, **Cantonese Quest** and **Writers Blocks** (all
-four); **Trip Board** and **UI Field Guide** (choice, demo and walk-through; their samples mark
-themselves, so no banner).
+Done so far: **Nihongo Quest**, **Hanzi Quest**, **Cantonese Quest**, **Writers Blocks** and
+**Photobook Studio** (all four); **Trip Board** and **UI Field Guide** (choice, demo and
+walk-through; their samples mark themselves, so no banner).
 
 ## When it shows
 
@@ -165,3 +165,6 @@ The same as the overviews (`jens_launchpad/OVERVIEW.md`):
   `overview/shots.json`, wrapped in a function, and seven steps that follow its overview.
 - **UI Field Guide** (last script in `index.html`): an app that's never empty. The demo loads
   nothing and clears nothing; it's the walk round the library and the example mockup.
+- **Photobook Studio** (`src/web/demo/` in the web build): new made-up data, illustrated photos
+  that go through the app's real import (their EXIF dates moved to three weeks ago when the demo
+  loads), a demo that reloads the page, eight steps across the home page and the editor.
