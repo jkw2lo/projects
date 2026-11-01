@@ -6,7 +6,7 @@
   "intro": "I design and build web apps for my own life: learning languages, planning trips and weeks, cooking, writing and making things by hand. Each one started with a problem I had, and most run in the browser with nothing to install.",
   "github": "https://github.com/jkw2lo",
 
-  "featured": ["writers-blocks", "learn_japanese_nihongo_quest", "trip_planner"],
+  "featured": ["learn_japanese_nihongo_quest", "writers-blocks", "photobook_studio", "trip_planner"],
 
   "groups": [
     { "id": "learning", "label": "Learning" },
